@@ -1,0 +1,234 @@
+\newpage
+\section{Singleton Kinds}
+
+\begin{lstlisting}
+sig
+  type t
+  type 'a u
+  type ('a,'b) v
+  type w = int
+  type w' = w
+  .
+  .
+  .
+end
+\end{lstlisting}
+
+To represent this in type our type system,
+$t \of \type$\\
+$u \of \type \arrow \type$\\
+$v \of \type \arrow \type \arrow \type$\\
+(or $v \of \type \times \type \arrow \type$)\\
+$w \of \singleton{\int}$\\
+$w' \of \singleton{w}$\\
+
+\subsection{Grammar and Judgements (Attempt 1)}
+Grammar:
+\begin{flalign*}
+k &\bnfdef \type \bnfalt k \arrow k \bnfalt k \times k \bnfalt \singleton{c} &\\
+c &\bnfdef \ldots
+\end{flalign*}
+
+Judgements:
+\begin{mathpar}
+\inferr{\Gamma \vd c \of \singleton{c}}{\strut}
+
+\inferr{\Gamma \vd c \equiv c' \of \type}{\Gamma \vd c \of \singleton{c}}
+
+\inferr{\Gamma \vd \singleton{c} \of \kind}{\Gamma \vd c \of \type}
+\end{mathpar}
+
+Signature for {\tt list}.
+\begin{lstlisting}
+sig
+  .
+  .
+  .
+  type 'a s = 'a list
+  type 'a t
+end
+\end{lstlisting}
+So we have $t \of \type \arrow \type$.\\
+How do we represent 'a s? Is $s \of \type \arrow \singleton{\alpha}$? But
+then what's $\alpha$.
+
+\begin{grouped}{\subsection{Dependent Kinds (Grammar)}}
+\begin{flalign*}
+k &\bnfdef \type \bnfalt \Pi\bind{\alpha \of k}{k}
+   \bnfalt \Sigma\bind{\alpha \of k}{k} \bnfalt \singleton{c} &\\
+c &\bnfdef \ldots
+\end{flalign*}
+
+% TODO
+\note{$\Pi$ is also known as ``dependent product''\\
+$\Sigma$ is also known as ``dependent sum'' (but also sometimes as
+``dependent product'').\\
+To avoid confusion, we name $\Pi$ ``dependent function (spaces)''.\\}
+
+Now, we have $s \of \Pi\bind{\alpha \of \type}{\singleton{\mathop{list} \alpha}}$.\\
+
+New judgements we need to be able to make: \\
+$\Gamma \vd k \of \kind$ \\
+$\Gamma \vd k \equiv k' \of kind$ \\
+$\Gamma \vd k \le k'$ \\
+$\Gamma \vd c \of k$ \\
+$\Gamma \vd c \equiv c' \of k$ \\
+$\Gamma \vd e \of \tau$ \\
+
+\note{$\singleton{\int} \le \type$}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd k \of \kind$}}
+\begin{mathpar}
+\inferr{\Gamma \vd \type \of \kind}{\strut}
+
+\inferr{\Gamma \vd \singleton{c} \of \kind}{\Gamma \vd c \of \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \of \kind}
+       {\Gamma \vd k_1 \of \kind \\ \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \of \kind}
+       {\Gamma \vd k_1 \of \kind \\ \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd k \equiv k' \of \kind$}}
+\begin{mathpar}
+\inferr{\Gamma \vd k \equiv k \of \kind}{\Gamma \vd k \of \kind}
+
+\inferr{\Gamma \vd k_2 \equiv k_1 \of \kind}{\Gamma \vd k_1 \equiv k_2 \of \kind}
+
+\inferr{\Gamma \vd k_1 \equiv k_2 \of \kind}
+       {\Gamma \vd k_1 \equiv k_2 \of \kind \\ \Gamma \vd k_2 \equiv k_2 \of \kind}
+
+% compatibility rules
+\inferr{\Gamma \vd \singleton{c} \equiv \singleton{c'} \of \kind}
+       {\Gamma \vd c \equiv c' \of \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \equiv
+                   \Pi\bind{\alpha \of k_1'}{k_2'} \of \kind}
+       {\Gamma \vd k_1 \equiv k_1' \of \kind \\
+        \Gamma, \alpha \of k_1 \vd k_2 \equiv k_2' \of \kind}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \equiv
+                   \Sigma\bind{\alpha \of k_1'}{k_2'} \of \kind}
+       {\Gamma \vd k_1 \equiv k_1' \of \kind \\
+        \Gamma, \alpha \of k_1 \vd k_2 \equiv k_2' \of \kind}
+\end{mathpar}
+\note{for the latter two, keep
+$\Pi\bind{\alpha \of k_1}{k_2} \oversetr{\equiv}{?} \Pi\bind{\alpha' \of k_1'}{k_2'}$
+in mind}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd \alpha \of k$}}
+\begin{mathpar}
+\inferr{\Gamma \vd \alpha \of k}{\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \of \type}
+       {\Gamma \vd c_1 \of \type \\ \Gamma \vd c_2 \of \type}
+
+\inferr{\Gamma \vd \forall\bind{\alpha : k}{c} \of \type}
+       {\Gamma \vd k \of kid \\ \Gamma, \alpha \of k \vd c \of \type}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k_1}{c} \of \Pi\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd k_1 \of \kind \\ \Gamma, \alpha \of k_1 \vd c \of k_2}
+
+\inferr{\Gamma \vd c_1\ c_2 \of \subst{c_1}{\alpha}{k'}}
+       {\Gamma \vd c_1 \of \Pi\bind{\alpha \of k}{k'} \\ \Gamma \vd c_2 \of k}
+
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \of \Sigma\bind{\alpha \of k_2}{k_2}}
+       {\Gamma \vd c_1 \of k_2 \\
+        \Gamma \vd c_2 \of \subst{c_1}{\alpha}{k_2} \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+
+\inferr{\Gamma \vd \pi_1 c \of k_1}
+       {\Gamma \vd c \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_2 c \of \subst{\pi_1 c}{\alpha}{k_2}}
+       {\Gamma \vd c \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+% TODO
+\inferr{\Gamma \vd c \of k'}{\Gamma \vd c \of k \\ \Gamma \vd k \le k'}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{Additional Judgements}
+If $\vd \Gamma \ok$ and $\Gamma \vd c \of k$, then $\Gamma \vd k \of \kind$.\\
+If $\vd \Gamma \ok$ and $\Gamma \vd k_1 \equiv k_2$, then $\Gamma \vd k_1, k_2 \kind$.\\
+If $\vd \Gamma \ok$ and $\Gamma \vd k_1 \le k_2$, then $\Gamma \vd k_1, k_2 \kind$.\\
+
+\begin{mathpar}
+\inferr{\Gamma \vd c \of \singleton{c}}{\Gamma \vd c \of \type}
+\end{mathpar}
+
+Sub-kinding:
+\begin{mathpar}
+\inferr{\Gamma \vd k \le k'}{\Gamma \vd k \equiv k' \of \kind}
+
+\inferr{\Gamma \vd k_1 \le k_3}{\Gamma \vd k_1 \le k_2 \\ \Gamma \vd k_2 \le k_3}
+
+% substantiative
+\inferr{\Gamma \vd \singleton{c} \le \type}{\Gamma \vd c \of \type}
+
+% compatibility rules
+\inferr{\Gamma \vd \singleton{c} \le \singleton{c'}}
+       {\Gamma \vd c \equiv c' \of \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \le
+                   \Pi\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1' \le k_1 \\
+        \Gamma, \alpha \of k_1' \vd k_2 \le k_2' \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \le
+                   \Sigma\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1 \le k_1' \\
+        \Gamma, \alpha \of k_1 \vd k_2 \le k_2' \\
+        \Gamma, \alpha \of k_1' \vd k_2' \of \kind}
+\end{mathpar}
+\note{Something about contravariance for 1st condition.
+$\Pi$ contravariant the same way arrow is contravariant.
+Covariance for 2nd condition. This is for $\Pi$.}
+
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd c \equiv c \of k$}}
+\begin{mathpar}
+\inferr{\Gamma \vd c \equiv c \of k}{\Gamma \vd c \of k}
+
+\inferr{\Gamma \vd c_2 \equiv c_1 \of k}{\Gamma \vd c_1 \equiv c_2 \of k}
+
+\inferr{\Gamma \vd c_1 \equiv c_3 \of k}
+       {\Gamma \vd c_1 \equiv c_2 \of k \\ \Gamma \vd c_2 \equiv c_3 \of k}
+
+% SUBSTANTIATIVE
+\inferr{\Gamma \vd (\lambda\bind{\alpha \of k}{c_1})\ c_2 \equiv \subst{c_2}{\alpha}{c_1} \of \subst{c_2}{\alpha}{k'}}{\Gamma \vd c_2 \of k \\ \Gamma, \alpha \of k \vd c_1 \of k'}
+
+\inferr{\Gamma \vd \pi_i \langle c_1, c_2 \rangle \equiv c_i \of k_i}{\Gamma \vd c_1 \of k_1 \\ \Gamma \vd c_2 \of k_2}
+
+\inferr{\Gamma \vd c \equiv c' \of \singleton{c'}}
+       {\Gamma \vd c \of \singleton{c'}}
+
+\inferr[$\star$]
+       {\Gamma \vd c_1 \equiv c_2 \of k'}
+       {\Gamma \vd c_1 \equiv c_2 \of k \\ \Gamma \vd k \le k'}
+
+\inferr[$\star$]
+       {\Gamma \vd c \equiv c' \of \singleton{c}}
+       {\Gamma \vd c \equiv c' \of \type}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k_1}{c} \equiv
+                   \lambda\bind{\alpha \of k_1'}{c'} \of \Pi\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd k_1 \equiv k_1' \of \kind \\
+        \Gamma, \alpha \of k_1 \vd c \equiv c' \of k_2}
+
+\inferr{\Gamma \vd c_1\ c_2 \equiv c_1'\ c_2' \of \subst{c_2}{\alpha}{k'}}
+       {\Gamma \vd c_1 \equiv c_1' \of \Pi\bind{\alpha \of k}{k'} \\
+        \Gamma \vd c_2 \equiv c_2' \of k}
+\end{mathpar}
+\end{grouped}
+
+%$\Gamma \vd k \le k'$ \\
+%$\Gamma \vd c \equiv c' \of k$ \\
+%$\Gamma \vd e \of \tau$ \\
+

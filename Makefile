@@ -3,7 +3,7 @@
 all: notes.pdf
 	open notes.pdf
 
-%.pdf: %.tex
+notes.pdf: *.tex
 	pdflatex -interaction nonstopmode $<
 
 clean:
