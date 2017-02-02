@@ -1,0 +1,157 @@
+\newpage
+\section{Algorithmic Equivalence in the $F\omega$ Type System}
+\begin{grouped}{\subsection{Normalize-and-Compare}}
+\note{We don't use this.\\}
+
+$\lambda\bind{\alpha \of k}{c_1}\ c_2 \xrightarrow{\beta} \subst{c_2}{\alpha}{c_1}$ \\
+$\pi_i \langle c_1, c_2 \rangle \xrightarrow{\beta} c_i$ \\
++ some $\eta$ reduction rules \\
+
+According to some equivalence theorem, they will have normal forms
+and those normal forms will be equal if they are equivalent.
+\end{grouped}
+
+\begin{grouped}{\subsection{Grammar and Properties}}
+Paths:\\
+$p \bnfdef \alpha \bnfalt p\ c \bnfalt \pi_1\ p \bnfalt \pi_2\ p$\\
+
+Weak-Head Normal Form:\\
+$n \bnfdef p \bnfalt c_1 \arrow c_2 \bnfalt \forall\bind{\alpha \of k}{c}$.\\
+
+Regularity:\\
+If $\vd \Gamma \ok$ and $\Gamma \vd c_1 \equiv c_2 \of k$,
+then $\Gamma \vd c_1 \of k$ and $\Gamma \vd c_2 \of k$.\\
+If $\vd \Gamma \ok$ and $\Gamma \vd c \of k$, then $\Gamma \vd k \of \kind$.\\
+
+Soundness:\\
+If $\vd \Gamma \ok$ and $\Gamma \vd c_1, c_2 \of k$ and $\Gamma \vd c_1 \ace c_2 \of k$,
+then $\vd c_1 \equiv c_2 \of k$.\\
+
+Completeness:\\
+If $\vd \Gamma \ok$ and $\Gamma \vd c_1 \equiv c_2 \of k$,
+then $\Gamma \vd c_1 \ace c_2 \of k$.\\
+
+\begin{mathpar}
+\inferr{\vd \epsilon \ok}{\strut}
+
+\inferr{\vd \Gamma, \alpha \of k \ok}{\vd \Gamma \ok \\ \Gamma \vd k \of \kind}
+
+\inferr{\vd \Gamma, x \of \tau \ok}{\vd \Gamma \ok \\ \Gamma \vd \tau \of \type}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{Algorithmic Constructor Equivalence}}
+Form: $\oversetr{\Gamma}{+} \vd \oversetr{c_1}{+} \ace \oversetr{c_2}{+} \of \oversetr{k}{+}$\\
+\note{$\oversetr{x}{+}$ indicates that $x$ is an input.}
+
+\begin{mathpar}
+\inferr{\Gamma \vd c \ace c' \of k_1 \arrow k_2}
+       {\Gamma, \alpha \of k_1 \vd c\ \alpha \ace c'\ \alpha \of k_2}
+
+\inferr{\Gamma \vd c \ace c' \of k_1 \times k_2}
+       {\Gamma \vd \pi_1\ c \ape \pi_1\ c' \of k_1 \\
+        \Gamma \vd \pi_2\ c \ape \pi_2\ c' \of k_2}
+
+\inferr{\Gamma \vd c_1 \ace c_2 \of \type}
+       {c_1 \whn c_1' \\ c_2 \whn c_2' \\ \Gamma \vd c_1' \ape c_2' \of \type}
+\end{mathpar}
+
+\subsection{Algorithmic Path Equivalence}
+Form: $\oversetr{\Gamma}{+} \vd \oversetr{c_1}{+} \ace \oversetr{c_2}{+} \of \oversetr{k}{-}$\\
+\note{$\oversetr{x}{-}$ indicates that $x$ is an output.}
+
+\begin{mathpar}
+\inferr{\Gamma \vd \alpha \ape \alpha \of k}{\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd p\ c \ape p'\ c' \of k_1}
+       {\Gamma \vd p \ape p' \of k_1 \arrow k_2 \\ \Gamma \vd c \ace c' \of k_1}
+
+\inferr{\Gamma \vd \pi_i\ p \ape \pi_i\ p' \of k_i}
+       {\Gamma \vd p \ape p' \of k_1 \times k_2}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \ape c_1' \arrow c_2' \of T}
+       {\Gamma \vd c_1 \ace c_1' \of T \\ \Gamma \vd c_1 \ace c_2' \of T}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \ape
+                   \forall\bind{\alpha \of k}{c'} \of T}
+       {\Gamma, \alpha \of k \vd c \ace c' \of T}
+\end{mathpar}
+
+\subsection{Weak-Head Normalization}
+Form: $\oversetr{c}{+} \whn \oversetr{n}{-}$
+
+\begin{mathpar}
+\inferr{c \whn c''}{c \whr c' \\ c' \whn c''}
+
+\inferr{c \whn c}{c \not\whr}
+\end{mathpar}
+
+\subsection{Weak-Head Reduction}
+Form: $\oversetr{c}{+} \whr \oversetr{c'}{-}$
+
+\begin{mathpar}
+\inferr{(\lambda\bind{\alpha \of k}{c_1})\ c_2 \whr \subst{c_2}{\alpha}{c_1}}{\strut}
+
+\inferr{\pi_i \langle c_1, c_2 \rangle \whr c_i}{\strut}
+
+\inferr{c_1\ c_2 \whr c_1'\ c_2}{c_1 \whr c_1'}
+
+\inferr{\pi_i c \whr \pi_i c'}{c \whr c'}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{Kind Synthesis and Checking}}
+Form: $\oversetr{\Gamma}{+} \vd \oversetr{c}{+} \synthesis \oversetr{k}{-}$ and
+$\oversetr{\Gamma}{+} \vd \oversetr{c}{+} \checking \oversetr{k}{+}$
+
+\begin{mathpar}
+\inferr{\Gamma \vd \alpha \synthesis k}{\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k}{c} \synthesis k \arrow k'}
+       {\Gamma, \alpha \of k \vd c \synthesis k'}
+
+\inferr{\Gamma \vd c_1\ c_2 \synthesis k'}
+       {\Gamma \vd c_1 \synthesis k \arrow k' \\ \Gamma \vd c_2 \checking k}
+
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \synthesis k_1 \times k_2}
+       {\Gamma \vd c_1 \synthesis k_1 \\ \Gamma \vd c_2 \synthesis k_2}
+
+\inferr{\Gamma \vd \pi_i\ c \synthesis k_1}{\Gamma \vd c \synthesis k_1 \times k_2}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \synthesis T}
+       {\Gamma \vd c_1 \checking T \\ \Gamma \vd c_2 \checking T}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \synthesis T}
+       {\Gamma, \alpha \of k \vd c \checking T}
+
+\inferr{\Gamma \vd c \checking k}{\Gamma \vd c \synthesis k}
+\end{mathpar}
+
+\subsection{Type Checking and Synthesis}
+Form: $\oversetr{\Gamma}{+} \vd \oversetr{e}{+} \synthesis \oversetr{c}{-}$ and
+$\oversetr{\Gamma}{+} \vd \oversetr{e}{+} \checking \oversetr{c}{+}$
+
+\begin{mathpar}
+\inferr{\Gamma \vd x \synthesis \tau}{\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd \lambda\bind{x \of \tau}{e} \synthesis \tau \arrow \tau'}
+       {\Gamma \vd \tau \checking T \\ \Gamma, x \of \tau \vd e \synthesis \tau'}
+
+\inferr{\Gamma \vd e_1\ e_2 \synthesis \tau'}
+       {\Gamma \vd e_1 \synthesis \tau_1 \\
+        \tau_1 \whn \tau \arrow \tau' \\
+        \Gamma \vd e_2 \checking \tau}
+
+\inferr{\Gamma \vd \Lambda\bind{\alpha \of}{e} \synthesis
+                   \forall\bind{\alpha \of k}{\tau}}
+       {\Gamma, \alpha \of k \vd e \synthesis \tau}
+
+\inferr{\Gamma \vd e [c] \synthesis \subst{c}{\alpha}{\tau'}}
+       {\Gamma \vd e \synthesis \tau \\
+        \tau \whn \forall\bind{\alpha \of k}{\tau'} \\
+        \Gamma \vd c \checking k}
+
+\inferr{\Gamma \vd e \checking \tau}
+       {\Gamma \vd e \synthesis \tau' \\ \Gamma \vd \tau \ace \tau' : T}
+\end{mathpar}
+\end{grouped}

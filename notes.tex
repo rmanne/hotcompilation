@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+
+%\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{latexsym}
+\usepackage{proof}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpartir}
+\usepackage{graphicx} % for the nice downarrow
+
+\usepackage{titlesec}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\bfseries}
+%\renewcommand{\thesetion}{\arabic{section}}
+%\renewcommand{\thesubsection}{(\alpha{subsection})}
+
+
+\usepackage{listings}
+\usepackage{color}
+\definecolor{eclipseBlue}{RGB}{42,0.0,255}
+\definecolor{eclipseGreen}{RGB}{63,127,95}
+\lstset {
+  basicstyle=\small\ttfamily,
+  captionpos=b,
+  tabsize=2,
+  columns=fixed,
+  breaklines=true,
+  mathescape=true,
+% frame=l,
+% numbers=left,
+% numberstyle=\small\ttfamily,
+  morekeywords= {
+    EQUAL, GREATER, LESS, NONE, SOME, abstraction, abstype, and, andalso, array, as, before, bool, case, char, datatype, do, else, end, eqtype, exception, exn, false, fn, fun, functor, handle, if, in, include, infix, infixr, int, let, list, local, nil, nonfix, not, o, of, op, open, option, orelse, overload, print, raise, real, rec, ref, sharing, sig, signature, string, struct, structure, substring, then, true, type, unit, val, vector, where, while, with, withtype, word
+  },
+  morestring=[b]",
+  morecomment=[s]{(*}{*)},
+  stringstyle=\color{black},
+  identifierstyle=\color{eclipseBlue},
+  keywordstyle=\color{red},
+  commentstyle=\color{eclipseGreen}
+}
+
+\setlength\parindent{0pt}
+
+% samepage doesn't quite work in some cases, not sure why
+% TODO: 16pt is an approximation
+\newenvironment{grouped}[1]{\begin{minipage}{\textwidth}#1}{\end{minipage}\vspace{16pt}}
+
+\newcommand{\trans}[1]{$\xrightarrow{\textnormal{#1}}$}
+\newcommand{\tab}{\hspace*{2pt}}
+\newcommand{\arrow}{\mathbin{\rightarrow}}
+\newcommand{\bnfdef}{\mathrel{\Coloneqq}}
+\newcommand{\bnfalt}{\mathrel{\mid}}
+\newcommand{\note}[1]{{\tiny Note: #1}}
+\newcommand{\vd}{\vdash}
+\newcommand{\of}{\mathrel{:}}
+\newcommand{\bind}[2]{#1\mathrel{.} #2}
+\newcommand{\inferr}[2]{\inferrule{#2}{#1}}
+\newcommand{\subst}[3]{[#1 \mathbin{/} #2]#3}
+
+\newcommand{\oversetr}[2]{\overset{#2}{#1}}
+
+\newcommand{\ace}{\Leftrightarrow} % Algorithmic Constructor Equivalence
+\newcommand{\ape}{\leftrightarrow} % Algorithmic Path Equivalence
+
+\newcommand{\Darrow}{\mathrel{\scalebox{1.2}[1]{$\Downarrow$}}}
+\newcommand{\whn}{\Darrow}
+\newcommand{\whr}{\leadsto}
+%\newcommand{\uarrow}{\mathrel{\scalebox{1.2}[1]{$\uparrow$}}}
+\newcommand{\lift}{\uparrow}
+
+\newcommand{\synthesis}{\Rightarrow}
+\newcommand{\checking}{\Leftarrow}
+
+\newcommand{\comp}{\mathrel{\circ}}
+
+\DeclareMathOperator{\kind}{kind}
+\DeclareMathOperator{\ok}{ok}
+\DeclareMathOperator{\fv}{FV}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\type}{Type}
+
+
+\title{HOT Compilation Notes}
+\author{Rahul Manne\\
+{\tt rmanne}@andrew.cmu.edu}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Compiler Structure}
+SML \\
+\tab\trans{elaborate} IL-Module \\
+\tab\tab\trans{phase-splitting} IL-Direct \\
+\tab\tab\tab\trans{cps conversion} IL-CPS \\
+\tab\tab\tab\tab\trans{closure conversion} IL-Closure \\
+\tab\tab\tab\tab\tab\trans{hoisting} IL-Hoist \\
+\tab\tab\tab\tab\tab\tab\trans{allocation} IL-Alloc \\
+\tab\tab\tab\tab\tab\tab\tab\trans{code-generation} C
+
+\include{170124}
+
+\include{170126}
+
+%\include{170131}
+
+\include{170202}
+
+\end{document}

@@ -1,0 +1,119 @@
+\newpage
+% TODO: this section is super incoherent
+\section{Substitution}
+
+\begin{grouped}{\subsection{Explicit Variables}}
+\begin{lstlisting}
+datatype con = Var of variable | Lam of variable * kind * con
+datatype term = Var of variable | Lam of variable * con * term
+\end{lstlisting}
+
+$c \bnfdef \alpha \bnfalt \lambda\bind{\alpha \of \tau}{c}$\\
+We always alpha variate because we can (saves the cost of a search):\\
+$\subst{M}{x}{(\lambda\bind{y}{N})} = \lambda\bind{y'}{\subst{M}{x}{\subst{y'}{y}{N}}}$ (find $y' \not\in \fv(M)$)\\
+\end{grouped}
+
+\begin{grouped}{\subsection{de Bruijn}}
+\begin{lstlisting}
+datatype con = Var of int | Lam of kind * con
+\end{lstlisting}
+
+Rules for substitution:
+\begin{align*}
+\subst{M}{i}{j} &=
+  \begin{cases} 
+    M & i = j \\
+    j - 1 & i < j \\
+    j & i > j
+  \end{cases}\\
+\subst{M}{i}{N\ P} &= \subst{M}{i}{N}\ \subst{M}{i}{P} \\
+\subst{M}{i}{\lambda\bind{}{N}} &= \lambda\bind{}{\subst{\lift_{\ge0}M}{i+1}{N}}
+\end{align*}
+
+Rules for $\lift$:
+\begin{align*}
+\lift_{\ge i} j = \begin{cases} j + 1 & j \ge i \\ j & j < i \end{cases} \\
+\lift_{\ge i} M\ N = \uparrow_{\ge i} M\ \uparrow_{\ge i} N \\
+\lift_{\ge i} \lambda\bind{}{N} = \lambda\bind{}{\lift_{\ge i + 1} N}
+\end{align*}
+\end{grouped}
+
+\begin{grouped}{\subsection{Explicit Substitution}}
+Grammar:\\
+$\sigma \bnfdef \bind{M}{\sigma} \bnfalt \lift^i$\\
+
+\note{$\id \overset{\mathop{def}}{=} \lift^0$\\}
+
+Syntax Definition:\\
+\begin{flalign*}
+0 [\bind{M}{\sigma}] &= M &\\
+i + 1 [\bind{M}{\sigma}] &= i [\sigma] &\\
+n [\lift^i] &= n + i &\\
+(MN) [\sigma] &= M[\sigma] N[\sigma] &\\
+(\lambda\bind{A}{M}) [\sigma] &= \lambda A[\sigma]. M[0.(\sigma \comp \lift^1)] &\\
+M[\sigma \comp \sigma'] &= M[\sigma][\sigma'] &\\
+(M.\sigma) \comp \sigma' &= M[\sigma'].(\sigma \comp \sigma') &\\
+\lift^0 \comp \sigma &= \sigma &\\
+\lift^{i + 1} \comp \sigma &= \lift^i \comp \sigma &\\ % TODO
+\lift^i \comp \lift^j &= \lift^{i + j}
+\end{flalign*}
+
+Syntax Exampes:\\
+$[M/0, N/1]$ % TODO: wtf
+\begin{flalign*}
+0 [\bind{M}{\bind{N}{\id}}] &= M &\\
+1 [\bind{M}{\bind{N}{\id}}] &= N &\\
+2 [\bind{M}{\bind{N}{\id}}] &= 0 &\\
+M &= M[0.\uparrow^1] &\\
+  &= M[0.1.2....n.\uparrow^{n + 1}] &\\
+\lift_{\ge 0}M &= M[\uparrow^1] &\\
+\lift_{\ge 0}\lift_{\ge 0}M &= M[\uparrow^2] &\\
+\lift_{\ge 1}M &= M[0.\uparrow^2]
+\end{flalign*}
+The last one here is a bit tricky. If you see $0$, we want to leave it as $0$,
+and if we see $1$ or more, it is lowered to $0$, so to make up for that
+change, shift up by $2$.\\
+\end{grouped}
+
+\begin{grouped}{Substitution Code (provided)\\}
+\begin{lstlisting}
+subst X Gen : int -> con list -> int -> X -> X
+subst X Gen i [$c_1 \ldots c_k$] l M = M[$0. ... i - 1. c_1[\lift^i]. ... c_k[\lift^i]. \lift^{i+l}$]
+  (* leave first i vars alone ($0 \ldots i-1$)
+   * subst $c_i$ but need to shift up by i when passing into $c_i$ *)
+
+substX c M = substXGen 0 [c] 0
+
+liftX l M = substXGen 0 [] l (* whenever you move under a binder *)
+\end{lstlisting}
+\end{grouped}
+
+% TODO: huge disconnect, FORMAT-------------------------------------------------
+
+$\Gamma \bnfdef \epsilon \bnfalt \Gamma, A$ \\
+
+% TODO: huge disconnect
+
+Typing Judgement for a substitution:\\
+if $\Gamma \vd \sigma \of \Gamma'$ and $\Gamma' \vd M \of B$
+then $\Gamma \vd M[\sigma] \of B[\sigma]$\\
+``Any term in $\Gamma'$, after we apply $\sigma$, we should get $\Gamma$''\\
+
+\begin{mathpar}
+\inferr{\Gamma, A_1 \ldots A_i \vd \lift^i \of \Gamma}{\strut}
+
+\inferr{\Gamma \vd \bind{M}{\sigma} \of \Gamma', A}
+       {\Gamma' \vd \sigma \of \Gamma' \\ \Gamma \vd M \of A[\sigma]}
+\end{mathpar}
+
+Example:\\
+\newcommand{\str}{\texttt{string}}
+\[
+\infer{\Gamma \vd [\bind{\texttt{"hello world"}}
+                        {\bind{\str}{\id}}] \of \Gamma, \type, 0}
+      {\infer{\Gamma \vd \bind{\str}{\id} \of \Gamma, \type} % TODO
+             {\Gamma \vd \id \of \Gamma & \Gamma \vd \str \of \type[\id]}
+      &\infer{\Gamma \vd \texttt{"hello world"} \of 0[\bind{\str}{\id}]}{\strut}}
+\]
+\note{$0[\bind{\str}{\id}]$ is just $\str$}
+% TODO: FORMAT ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

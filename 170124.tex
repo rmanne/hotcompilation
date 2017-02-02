@@ -1,0 +1,146 @@
+\newpage
+\section{Introduction to the $F\omega$ type system}
+
+% This came first, fundementally useless for us
+%\subsection{Grammar of the $F$ type system (``System F'')}
+%\begin{align*}
+%\tau & \bnfdef \alpha \bnfalt \tau \arrow \tau \bnfalt \forall \alpha. \tau \\
+%e &\bnfdef x \bnfalt \lambda x \of \tau. e \bnfalt e\ e \bnfalt \Lambda \alpha. e \bnfalt e [ \tau ]
+%\end{align*}
+%Type $\tau$ and Term $e$.
+
+\begin{grouped}{\subsection{Context for Judgements}}
+\subsection{Grammar}
+\begin{align*}
+k & \bnfdef \type \bnfalt k \arrow k \\
+c & \bnfdef \alpha \bnfalt c \arrow c \bnfalt \forall \bind{\alpha \of k}{c} \bnfalt c\ c \\
+e & \bnfdef x \bnfalt \lambda \bind{x \of c}{e} \bnfalt e\ e
+    \bnfalt \Lambda \bind{\alpha \of k}{e} \bnfalt e [ c ] \\
+\end{align*}
+Kind $k$, Type Constructor $c$, and Term $e$.\\
+\note{$\type$ is often referred to with just ``T'' (by Crary), for simplicity.\\}
+\end{grouped}
+
+\begin{grouped}{\subsection{Context for Judgements}}
+\begin{equation} \label{Context}
+\Gamma \bnfdef \epsilon \bnfalt \Gamma, x \of \tau \bnfalt \Gamma, \alpha \of k
+\end{equation}
+\note{For simplicity, whenever a new $\alpha$ appears in the context, we
+implicitly ensure that $\alpha$ is not already in $\Gamma$.\\}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd c \of k$}}
+\begin{mathpar}
+\inferr{\Gamma \vd \alpha \of k}
+       {\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd \tau_1 \arrow \tau_2 \of T}
+       {\Gamma \vd \tau \of T \\ \Gamma \vd \tau_2 \of T}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{\tau}}
+       {\Gamma, \alpha \of k \vd \tau \of T}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k}{c} \of k \arrow k'}
+       {\Gamma, \alpha \of k \vd c \of k'}
+
+\inferr{\Gamma \vd c_1\ c_2 \of k'}
+       {\Gamma \vd c_1 \of k \arrow k' \\ \Gamma \vd c_2 : k}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd e \of \tau$}}
+\begin{mathpar}
+\inferr{\Gamma \vd x \of \tau}{\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd \lambda\bind{x \of \tau}{e} \of \tau \arrow \tau'}
+       {\Gamma, x \of \tau \vd e \of \tau'}
+
+\inferr{\Gamma \vd e_1\ e_2 \of \tau'}
+       {\Gamma \vd e_1 \of \tau \arrow \tau' \\ \Gamma \vd e_2 : \tau}
+
+\inferr{\Gamma \vd \Lambda\bind{\alpha \of k}{e} \of \forall\bind{\alpha \of k}{\tau}}
+       {\Gamma, \alpha \of k \vd e \of \tau}
+
+\inferr{\Gamma \vd e [c] \of \subst{c}{\alpha}{e}}
+       {\Gamma \vd e \of \forall\bind{\alpha \of k}{e} \\ \Gamma \vd c \of k}
+
+\inferr{\Gamma \vd e \of \tau'}
+       {\Gamma \vd e \of \tau \\ \Gamma \vd \tau \equiv \tau' : T}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{$\Gamma \vd c \equiv c \of k$}}
+Definitional Equivalence.\\
+
+\begin{mathpar}
+\inferr{\Gamma \vd c \equiv c \of k}{\Gamma \vd c \of k}
+
+\inferr{\Gamma \vd c' \equiv c \of k}{\Gamma \vd c \equiv c' \of k}
+
+\inferr{\Gamma \vd c_1 \equiv c_3 \of k}
+       {\Gamma \vd c_1 \equiv c_2 \of k \\ \Gamma \vd c_2 \equiv c_2 \of k}
+\end{mathpar}
+The above are identity, reflexivity, and transitivity respectively.\\
+
+The following are ``compatibility'' rules.\\
+\begin{mathpar}
+\inferr{\Gamma \vd c_1c_2 \equiv c_1'c_2' \of k}
+       {\Gamma \vd c_1 \equiv c_1' \of k \\ \Gamma \vd c_2 \equiv c_2' \of k}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k_1}{c} \equiv
+                   \lambda\bind{\alpha \of k_1}{c'} \of k_1 \arrow k_2}
+       {\Gamma, \alpha \of k_1 \vd c \equiv c' \of k_2}
+
+\inferr{\Gamma \vd \tau_1 \arrow \tau_2 \equiv \tau_1' \arrow \tau_2' \of T}
+       {\Gamma \vd \tau_1 \equiv \tau_1' \of k \\
+        \Gamma \vd \tau_2 \equiv \tau_2' \of k}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{\tau} \equiv
+                   \forall\bind{\alpha \of k}{\tau'} \of T}
+       {\Gamma, \alpha \of k \vd \tau \equiv \tau' : T}
+\end{mathpar}
+
+congruence = compatible equivalence relation \\ %% TODO: WTF IS THIS
+The following are the rules for beta equivalence and extensionality:\\
+\begin{mathpar}
+\inferr{\Gamma \vd (\lambda\bind{\alpha \of k}{c_1})\ c_2 \equiv
+                  \subst{c_2}{\alpha}{c_1} \of k'}
+       {\Gamma \vd c_2 \of k \\ \Gamma, \alpha \of k \vd c_1 \of k'}
+
+\inferr{\Gamma \vd c \equiv c' \of k_1 \arrow k_2}
+       {\Gamma, \alpha \of k_1 \vd c\ \alpha \equiv c'\ \alpha \of k_2 \\
+        \Gamma \vd c \of k_1 \arrow k_2 \\ \Gamma \vd c' : k_1 \arrow k_2}
+\end{mathpar}
+\end{grouped}
+
+\begin{grouped}{\subsection{Extending $F\omega$}}
+\note{This helps in the understanding of sml's module system\\}
+
+Grammar:
+\begin{align*}
+k & \bnfdef \ldots \bnfalt k \times k \\
+c & \bnfdef \ldots \bnfalt \langle c, c \rangle \bnfalt \pi_1 c \bnfalt \pi_2 c
+\end{align*}
+
+New Judgements:
+\begin{mathpar}
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \of k_1 \times k_2}
+       {\Gamma \vd c_1 \of k_2 \\ \Gamma \vd c_2 \of k_2}
+
+\inferr{\Gamma \vd \pi_i\ c \of k_1}{\Gamma \vd c \of k_1 \times k_2}
+
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \equiv
+                   \langle c_1', c_2' \rangle \of k_1 \times k_2}
+       {\Gamma \vd c_1 \equiv c_1' \of k_1 \\ \Gamma \vd c_2 \equiv c_2' \of k_2}
+
+\inferr{\Gamma \vd \pi_i\ c \equiv \pi_i\ c' \of k_i}
+       {\Gamma \vd c \equiv c' \of k_1 \times k_2}
+
+\inferr{\Gamma \vd \pi_i\langle c_1, c_2 \rangle \equiv c_i \of k_i}
+       {\Gamma \vd c_1 \of k_1 \\ \Gamma \vd c_2 \of k_2}
+
+\inferr{\Gamma \vd c \equiv c' \of k_1 \times k_2}
+       {\Gamma \vd \pi_1\ c \equiv \pi_1\ c' \of k_1 \\
+        \Gamma \vd \pi_2\ c \equiv \pi_2\ c' \of k_2}
+\end{mathpar}
+\end{grouped}
