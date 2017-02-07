@@ -1,0 +1,180 @@
+\newpage
+\section{Sub-Typing}
+
+$\tau \le \tau'$ means you can use a $\tau$ whrever a $\tau'$ is expected.\\
+
+\begin{mathpar}
+\inferr%[subsumption]
+       {\Gamma \vd e \of \tau'}{\Gamma \vd e \of \tau \\ \tau \le \tau'}
+
+\inferr%[$*^1$]
+       {\Gamma \vd \tau \times \tau_2 \le \tau_1' \times \tau_2'}
+       {\tau_1 \le \tau_1' \\ \tau_2 \le \tau_2'}
+
+\inferr%[$*^2$]
+       {\tau_1 \arrow \tau_2 \le \tau_1' \arrow \tau_2'}
+       {\tau_1' \le \tau_1 \\ \tau_2 \le \tau_2'}
+\end{mathpar}
+Note 1: This is a case of covariance on both sides.\\
+Note 2: This is contravariant on the left and covariant on the right.\\
+
+$\nats \le \reals$.\\
+Assume we have $f \of \nats \arrow \nats$.\\
+$f \not\of \reals \arrow \reals$.\\
+
+Assume we have $f \of \reals \arrow \reals$.\\
+Contravariance: $f \of \nats \arrow \reals$.\\
+
+\begin{mathpar}
+\inferr{\sref{\tau} \le \sref{\tau'}}{\tau \equiv \tau' \of \type}
+\end{mathpar}
+$\sref{\tau}$ is neither covariant nor contravariant. Called ``invariant''.
+(Poorly named, but it's what's used in literature.)\\
+
+\begin{mathpar}
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \le
+                   \Pi\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1' \le k_1 \\ \Gamma, \alpha \of k_1' \vd k_2 \le k_2' \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of kind}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \le
+                   \Sigma\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1' \le k_1 \\ \Gamma, \alpha \of k_1' \vd k_2 \le k_2' \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+
+\inferr%[$\times^1$]
+       {\Gamma \vd c \equiv c' \of \singleton{c'}}
+       {\Gamma \vd c \of \singleton{c'}}
+
+\inferr{\Gamma \vd c \equiv c' \of \type}{\Gamma \vd c \of \singleton{c'}}
+
+\inferr{\Gamma \vd c \of c' \of \singleton{c}}{\Gamma \vd c \equiv c' \of \type}
+\end{mathpar}
+Note 1: Sound, but not what we want.\\
+
+More compatiblity rules.\\
+\begin{mathpar}
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \equiv \langle c_1', c_2' \rangle \of \Sigma\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd c_1 \equiv c_1' \of k_1 \\
+        \Gamma \vd c_2 \equiv c_2' \of \subst{c_1}{\alpha}{k_2} \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+
+\inferr{\Gamma \vd \pi_1 c \equiv \pi_1 c' \of k_1}
+       {\Gamma \vd c \equiv c' \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_2 c \equiv \pi_2 c' \of \subst{\pi_1 c}{\alpha}{k_2}}
+       {\Gamma \vd c \equiv c' \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \equiv c_1' \arrow c_2' \of \type}
+       {\Gamma \vd c_1 \equiv c_1' \of \type \\
+        \Gamma \vd c_2 \equiv c_2' \of \type}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \equiv
+                   \forall\bind{\alpha \of k'}{c'} \of \type}
+       {\Gamma \vd k \equiv k' \of \kind \\ \Gamma, \alpha \of k \vd c \equiv c' \of \type}
+\end{mathpar}
+
+Rules for extentionality.
+\begin{mathpar}
+\inferr{\Gamma \vd c \equiv c' \of \Pi\bind{alpha \of k_1}{k_2}}
+       {\Gamma, \alpha \of k_1 \vd c\ \alpha \equiv c'\ \alpha \of k_2 \\
+        \Gamma \vd c \of \Pi\bind{alpha \of k_1}{k_2'} \\
+        \Gamma \vd c' \of \Pi\bind{alpha \of k_1}{k_2''}}
+
+\inferr%[$*^1$]
+       {\Gamma \vd c \equiv c' \of \Pi\bind{\alpha \of k_1}{k_2}}
+       {\Gamma, \alpha \of k_1 \vd c\ \alpha \equiv c'\ \alpha \of k_2 \\
+        \Gamma \vd c \equiv c' \of \Pi\bind{alpha \of k_1}{k_2'}}
+
+\inferr{\Gamma \vd c \equiv c' \of \Sigma\bind{alpha \of k_1}{k_2}}
+       {\Gamma \vd \pi_1 c \equiv \pi_1 c' \of k_1 \\
+        \Gamma \vd \pi_2 c \equiv \pi_2 c' \of \subst{\pi_1 c}{\alpha}{k_2} \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+\end{mathpar}
+Note 1: We only need this for proofs (regularity). We can safely ignore this.\\
+
+% TODO: motivation?
+We have no way of dealing with $\singleton{c \of k}$. So instead of redefining
+everything, treat it as a macro following the following rules:\\
+$\singleton{c \of \type} = \singleton{c}$ \\
+$\singleton{c \of \Pi\bind{\alpha \of k_1}{k_2}}
+  = \Pi\bind{\alpha \of k_1}{\singleton{c\ \alpha \of k_2}}$ \\
+$\singleton{c \of \singleton{c'}} = \singleton{c}$
+(note here, $c \equiv c'$, so we can use either, but it's easier for us to use $c$) \\
+$\singleton{c \of \Pi\bind{\alpha \of k_1}{k_2}}
+  = \Sigma\bind{\alpha \of \singleton{\pi_1 c \of k_1}}{\singleton{\pi_2 c \of k_2}}$ \\
+OR $\singleton{\pi_1 c \of k_1} \times \singleton{\pi_2 c \of \subst{\pi_1 c}{\alpha}{k_2}}$ \\
+We use the 2nd because it's nicer when not working without theory. The first is
+more theoretic, the second is syntactic.\\
+
+
+% TODO
+\begin{enumerate}
+\item If $\Gamma \vd c \of k$, then $\Gamma \vd c \of \singleton{c \of k}$
+\item If $\Gamma \vd c \of \singleton{c' \of k}$, then $\Gamma \vd c \equiv c' \of k$
+\end{enumerate}
+
+But the first doesn't hold. So let's make it hold. Add ``declarative'' rules:
+\begin{mathpar}
+\inferr{\Gamma \vd c \of \Pi\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd k_1 \of \kind \\
+        \Gamma, \alpha \of k_1 \vd c\ \alpha \of k_2}
+
+\inferr{\Gamma \vd c \of \Sigma\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd \pi_1 c \of k_2 \\
+        \Gamma \vd \pi_1 c \of \subst{\pi_1 c}{\alpha}{k_2} \\
+        \Gamma, \alpha \of k_1 \vd k_2 \of \kind}
+\end{mathpar}
+
+Notes on definitional equivalence:\\
+$\alpha \of \type \vd \alpha \not\equiv \intt \of \type$ \\
+$\alpha \of \singleton\intt \vd \alpha \equiv \intt \of \type$ \\
+$\vd \lambda\bind{\alpha \of \type}{\alpha} \not\equiv \lambda\bind{\alpha \of \type}{\intt} \of \type \arrow \type$ \\
+$\vd \lambda\bind{\alpha \of \type}{\alpha} \not\equiv \lambda\bind{\alpha \of \type}{\intt} \of \singleton\intt \arrow \type$ \\
+$\beta \of (\type \arrow \type) \arrow \type \vd \beta(\lambda\bind{\alpha \of \type}{\alpha} \not\equiv \beta(\lambda\bind{\alpha \of \type}{\intt} \of \type$ \\
+$\beta \of (\singleton\intt \arrow \type) \arrow \type \vd \beta(\lambda\bind{\alpha \of \type}{\alpha} \equiv \beta(\lambda\bind{\alpha \of \type}{\intt} \of \type$ \\
+$\type \arrow \type \le \singleton\intt \arrow \type$ \\
+
+
+\subsection{Algorithm for Equivalence Checking}
+\begin{mathpar}
+\inferr{\Gamma \vd c \ace c' \of \Pi\bind{\alpha \of k_1}{k_2}}
+       {\Gamma, \alpha \of k_1 \vd c\ \alpha \ace c'\ \alpha \of k_2}
+
+\inferr{\Gamma \vd c \ace c' \of \Sigma\bind{\alpha \of k_1}{k_2}}
+       {\Gamma \vd \pi_1 c \ace \pi_2 c' \of k_1
+        \Gamma \vd \pi_2 c \ace \pi_2 c' \of \subst{\pi_1 c}{\alpha}{k_2}}
+
+\inferr{\Gamma \vd c_1 \ace c_2 \of \type}
+       {\Gamma \vd c_1 \whn c_1' \\ \Gamma \vd c_2 \whn c_2' \\
+        \Gamma \vd c_1' \whr c_2' \of \type}
+
+\inferr{\Gamma \vd c \whn c''}{\Gamma \vd c \whr c' \\ \Gamma \vd c' \whn c''}
+
+\inferr{\Gamma \vd c \whn c}{\Gamma \vd c \not\whr}
+
+\inferr{\Gamma \vd (\lambda\bind{\alpha \of k}{c_1})\ c_2 \whr \subst{c_2}{\alpha}{c_1}}{\strut}
+
+\inferr{\Gamma \vd c_1\ c_2 \whr c_1'\ c_2}{\Gamma \vd c_1 \whr c_1'}
+
+\inferr{\Gamma \vd \pi_i \langle c_1, c_2 \rangle \whr c_i}{\strut}
+
+\inferr{\Gamma \vd pi_i c \whr pi_i c'}{\Gamma \vd c \whr c'}
+
+\inferr{\Gamma \vd p}{\Gamma \vd p \nk \singleton{c}}
+
+\inferr{\Gamma \vd \alpha \nk k}{\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd p\ c \nk \subst{c}{\alpha}{k_2}}
+       {\Gamma \vd p \nk \Pi\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_1 p \nk k_1}{\Gamma \vd p \nk \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_2 p \nk \subst{\pi_1 p}{\alpha}{k_2}}
+       {\Gamma \vd p \nk \Sigma\bind{\alpha \of k_1}{k_2}}
+\end{mathpar}
+
+% TODO nk "natural kind" is uparrow
+% \Gamma+ \vd p+ \nk k-
+
+

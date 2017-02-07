@@ -65,9 +65,10 @@
 
 \newcommand{\Darrow}{\mathrel{\scalebox{1.2}[1]{$\Downarrow$}}}
 \newcommand{\whn}{\Darrow}
-\newcommand{\whr}{\leadsto}
-%\newcommand{\uarrow}{\mathrel{\scalebox{1.2}[1]{$\uparrow$}}}
-\newcommand{\lift}{\uparrow}
+\newcommand{\whr}{\mathrel{\leadsto}}
+\newcommand{\Uarrow}{\mathrel{\scalebox{1.2}[1]{$\Uparrow$}}}
+\newcommand{\nk}{\mathrel{\Uarrow}}
+\newcommand{\lift}{\mathrel{\uparrow}}
 
 \newcommand{\synthesis}{\Rightarrow}
 \newcommand{\checking}{\Leftarrow}
@@ -79,11 +80,18 @@
 %\newcommand{\test}[3][]{\ifthenelse{\isempty{#1}}{omitted}{given} #2 #3}
 \newcommand{\inferr}[3][]{\inferrule*[Right=#1]{#3}{#2}}
 
+
+\newcommand{\nats}{\mathcal{N}}
+\newcommand{\reals}{\mathcal{R}}
+
 \DeclareMathOperator{\kind}{kind}
 \DeclareMathOperator{\ok}{ok}
 \DeclareMathOperator{\fv}{FV}
 \DeclareMathOperator{\id}{id}
 \DeclareMathOperator{\type}{Type}
+\DeclareMathOperator{\refraw}{ref}
+\DeclareMathOperator{\intt}{int}
+\newcommand{\sref}[1]{\refraw(#1)}
 
 
 \title{HOT Compilation Notes}
@@ -120,5 +128,7 @@ SML \\
 %\include{170131}
 
 \include{170202}
+
+\include{170207}
 
 \end{document}
