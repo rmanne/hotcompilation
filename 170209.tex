@@ -1,0 +1,189 @@
+\newpage
+% TODO: continuation from previous time
+
+\begin{mathpar}
+\inferr{\Gamma \vd p \whr c}{\Gamma \vd p \nk \singleton{c}}
+\end{mathpar}
+
+Example:\\
+\begin{mathpar}
+\inferr
+  {\vd \lambda\bind{\alpha \of \type}{\alpha} \ace \lambda\bind{\alpha \of \type}{\intt} \of \singleton{\intt} \arrow \type}
+  {\inferr
+    {\alpha \of \singleton{\intt} \vd
+      (\lambda\bind{\alpha \of \type}{\alpha}) \alpha \ace
+      (\lambda\bind{\alpha \of \type}{\intt}) \alpha \ace}
+    {\inferr
+      {\alpha \of \singleton{\intt} \vd
+        (\lambda\bind{\alpha \of \type}{\alpha}) \alpha \whn
+        }
+      {\ldots \vd (\lambda{\alpha \of \type}{\alpha}{\alpha} \whr \alpha \\
+       \inferr
+        {\ldots \vd \alpha \whn \intt}
+        {\inferr
+          {\alpha \of \singleton{\intt} \vd \alpha \whr \intt}
+          {\alpha \of \singleton{\intt} \vd \alpha \nk \singleton{\intt}} \\
+         \inferr{\ldots \vd \intt \whn \intt}{\ldots \vd \intt \not\whr}
+        }
+      }
+     \inferr{\alpha \of \singleton{\intt} \vd (\lambda{\alpha \of \type}{\intt}) \alpha \whn \intt}{\strut} \\
+     \inferr{\alpha \of \singleton{\intt} \vd \intt \ape \intt \of \type}{\strut}
+    }
+  }
+\end{mathpar}
+
+One final rule: \\
+\begin{mathpar}
+\inferr{\Gamma \vd c_1 \ace c_2 \of \singleton{c}}{\strut}
+\end{mathpar}
+The precondition is that both $c_1$ and $c_2$ belong to $\singleton{c}$, meaning
+they are equivalent to $c$ and by transitivity, equivalent to each other.\\
+
+Some rules that we will never use:\\
+\begin{mathpar}
+\inferr{\Gamma \vd c_1 \arrow c_2 \nk \type}{\strut}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \nk \type}{\strut}
+\end{mathpar}
+
+Structural rules:
+\begin{mathpar}
+\inferr{\Gamma \vd \alpha \ape \alpha \of k}{\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd p\ c \ape p'\ c' \of \subst{c}{\alpha}{k_2}}
+       {\Gamma \vd p \ape p' \of \Pi\bind{\alpha \of k_1}{k_2} \\
+        \Gamma \vd c \ace c' \of k_1}
+
+\inferr{\Gamma \vd \pi_1 p \ape \pi_1 p' \of k_1}
+       {\Gamma \vd p \ape p' \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_1 p \ape \pi_1 p' \of \subst{\pi_1 p}{\alpha}{k_2}}
+       {\Gamma \vd p \ape p' \of \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \ape c_1' \arrow c_2' \of \type}
+       {\Gamma \vd c_1 \ace c_1' \of \type \\ \Gamma \vd c_2 \ace c_2' \of \type}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \ape \forall\bind{\alpha \of k'}{c'} \of \type}
+       {\Gamma \vd k \ace k' \of \kind \\ \Gamma, \alpha \of k \vd c \ace c' \of \type}
+\end{mathpar}
+
+If $\Gamma \vd c \ape c' \of k$ then $\Gamma \vd c \nk k$ also
+$\exists\bind{k'}{\Gamma \vd c' \nk k'}$ and $\Gamma \vd k \equiv k' \of \kind$\\
+
+Structural comparison:
+\begin{mathpar}
+\inferr{\Gamma \vd \type \ace \type \of \kind}{\strut}
+\inferr{\Gamma \vd \singleton{c} \ace \singleton{c'} \of \kind}
+       {\Gamma \vd c \ace c' \of \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \ace
+                   \Pi\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1 \ace k_1' \of \kind \\
+        \Gamma, \alpha \of k_1 \vd k_2 \ace k_2' \of \kind}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \ace
+                   \Sigma\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1 \ace k_1' \of \kind \\
+        \Gamma, \alpha \of k_1 \vd k_2 \ace k_2' \of \kind}
+\end{mathpar}
+
+% TODO different from \le triangle less/equal subkind
+$\Gamma \vd k \sk k'$
+\begin{mathpar}
+\inferr{\Gamma \vd \type \sk \type}{\strut}
+
+\inferr{\Gamma \vd \singleton{c} \sk \type}{\strut}
+
+\inferr{\Gamma \vd \singleton{c} \sk \singleton{c'}}{\Gamma \vd c \ace c' \of \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \sk
+                   \Pi\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1' \sk k_1 \\ \Gamma, \alpha \of k_1' \vd k_2 \sk k_2'}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of k_1}{k_2} \sk
+                   \Sigma\bind{\alpha \of k_1'}{k_2'}}
+       {\Gamma \vd k_1 \sk k_1' \\ \Gamma, \alpha \of k_1 \vd k_2 \sk k_2'}
+\end{mathpar}
+
+% TODO checks against
+$\Gamma \vd k \checking \kind$
+\begin{mathpar}
+\inferr{\Gamma \vd \type \checking \kind}{\strut}
+
+\inferr{\Gamma \vd \singleton{c} \checking \kind}{\Gamma \vd c \checking \type}
+
+\inferr{\Gamma \vd \Pi\bind{\alpha \of k_1}{k_2} \checking \kind}
+       {\Gamma \vd k_1 \checking \kind \\ \Gamma, \alpha \of k_1 \vd k_2 \checking \kind}
+\end{mathpar}
+
+% TODO
+Suppose $\vd \Gamma \ok$. Then:\\
+
+{\underline Soundness}\\
+\begin{itemize}
+\item If $\Gamma \vd c_1, c_2 \of k$ and $\Gamma \vd c_1 \ace c_2 \of k$ then
+$\Gamma \vd c_1 \equiv c_2 \of k$
+\item If $\Gamma \vd k_1, k_2 \of \kind$ and $\Gamma \vd k_1 \ace k_2 \of \kind$
+then $\Gamma \vd k_1 \equiv k_2 \of \kind$
+\item If $\Gamma \vd k_1, k_2 \of \kind$ and $\Gamma \vd k_1 \sk k_2$
+then $\Gamma \vd k_1 \le k_2$
+\item If $\Gamma \vd k \checking \kind$ then $\Gamma \vd k \of \kind$
+\item If $\Gamma \vd c \synthesis k$ then $\Gamma \vd c \of k$
+\end{itemize}
+
+{\underline Completeness}\\
+\begin{itemize}
+\item If $\Gamma \vd c_1 \equiv c_2 \of k$ then $\Gamma \vd c_1 \ace c_2 \of k$
+\item If $\Gamma \vd k_1 \equiv k_2 \of \kind$
+then $\Gamma \vd k_1 \ace k_2 \of \kind$
+\item If $\Gamma \vd k_1 \le k_2$ then $\Gamma \vd k_1 \sk k_2$
+\item If $\Gamma \vd k \of \kind$ then $\Gamma \vd k \checking \kind$
+\item If $\Gamma \vd c \of k$
+then $\Gamma \vd c \synthesis k'$ and $\Gamma \vd k' \le \singleton{c \of k}$
+\end{itemize}
+
+\vspace{1cm}
+TODO: principle type \\
+TODO: principle kind is a subkind of every other kind \\
+
+Checking principle...\\
+$\Gamma \vd c \synthesis k$
+\begin{mathpar}
+\inferr{\Gamma \vd c \checking k}{\Gamma \vd c \synthesis k' \\ \Gamma \vd k' \sk k}
+\end{mathpar}
+
+
+% TODO
+\begin{mathpar}
+\inferr%[selfification]
+       {\Gamma \vd \alpha \synthesis \singleton{\alpha \of k}}
+       {\Gamma(\alpha) = k}
+
+\inferr{\Gamma \vd \lambda\bind{\alpha \of k}{c} \synthesis \Pi\bind{\alpha \of k}{k'}}
+       {\Gamma \vd k \checking \kind \\
+        \Gamma, \alpha \of k \vd c \synthesis k'}
+
+\inferr{\Gamma \vd c_1\ c_2 \synthesis \subst{c_2}{\alpha}{k'}}
+       {\Gamma \vd c_1 \synthesis \Pi\bind{\alpha \of k}{k'} \\
+        \Gamma \vd c_2 \checking k}
+
+\inferr{\Gamma \vd \langle c_1, c_2 \rangle \synthesis k_1 \times k_2}
+       {\Gamma \vd c_1 \synthesis k_1 \\ \Gamma \vd c_2 \synthesis k_2}
+
+\inferr{\Gamma \vd \pi_1 c \synthesis k_1}
+       {\Gamma \vd c \synthesis \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd \pi_2 c \synthesis \subst{\pi_1 c}{\alpha}{k_2}}
+       {\Gamma \vd c \synthesis \Sigma\bind{\alpha \of k_1}{k_2}}
+
+\inferr{\Gamma \vd c_1 \arrow c_2 \synthesis \singleton{c_1 \arrow c_2}}
+       {\Gamma \vd c_1 \checking \type \\ \Gamma \vd c_2 \checking \type}
+
+\inferr{\Gamma \vd \forall\bind{\alpha \of k}{c} \synthesis
+                        \singleton{\forall\bind{\alpha \of k}{c}}}
+       {\Gamma \vd k \checking \kind \\ \Gamma, \alpha \of k \vd c \checking \type}
+\end{mathpar}
+
+% TODO: algorithmic kind formation call what again?
+
+

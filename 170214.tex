@@ -1,0 +1,112 @@
+\newpage
+\section{Checking Expressions}
+
+$\Gamma \vd e \synthesis \tau$
+\begin{mathpar}
+\inferr{\Gamma \vd x \synthesis \tau}{\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd e_1\ e_2 \synthesis \tau'}
+       {\Gamma \vd e_1 \synthesis \tau_1 \\
+        \Gamma \vd \tau_1 \whn \tau \arrow \tau' \\
+        \Gamma \vd e_2 \checking \tau}
+\end{mathpar}
+
+\section{Type-Directed Translation / Syntax-Directed Translation}
+A more accurate name: ``Typing-derivation-directed translation''.
+We proceed by the analysis of the typing derivation of the rules.
+
+\newcommand{\target}[1]{\textcolor{green}{#1}}
+\newcommand{\tto}{\translatesto}
+Let's represent the source and target languages in different colors, to
+indicate that they are different.\\
+
+Property:\\
+$\Gamma \vd e \of \tau$ if and only if $\exists\bind{\target{e}}{\Gamma \vd e \of \tau \translatesto \target{e}}$.\\
+
+We also want:\\
+If $\Gamma \vd e \of \tau \tto \target{e}$, something like
+$\target{\Gamma \vd e \of \tau}$.\\
+But we have no concept of $\target{\Gamma}$ or $\target{\tau}$ or its derivations.\\
+Instead:\\
+Property:\\
+If $\Gamma \vd e \of \tau \tto \target{e}$
+and $\tau \tto \target{\tau}$
+and $\Gamma \tto \target{\Gamma}$,
+then $\target{\Gamma \vd e \of \tau}$. \\
+Why not $\Gamma \vd \tau \of \type \tto \tau$.\\
+
+Simply, we'll use `` If $\Gamma \vd e \of \tau \tto \target{e}$
+then $\target{\Gamma} \vd \target{e} \of \target{\tau}$
+
+\subsection{Coherence}
+For Terms:\\
+Suppose $\Gamma \vd e \of \tau \tto \target{e}$ and
+$\Gamma \vd e \of \tau \tto \target{e'}$.\\
+$\target{\Gamma \vd e \cong e' \of \tau}$.\\
+This is too hard to even define, this is left to graduate courses.
+We aspire to it but it's too much of a pain to actually do.\\
+
+For Types:\\
+Suppose $\Gamma \vd c \of k \tto \target{c}$ and
+$\Gamma \vd c \of k \tto \target{c'}$.\\
+Then,\\
+$\Gamma \vd c \equiv c' \of k$. \\
+This is not an aspiration, we cannot live without this. \\
+The 2nd property above can't even be made without this, but it doesn't have
+to be kind directed. And instead, we'll just make it syntax directed, which
+will trivially prove that the two are equivalent.
+
+
+\subsection{Definition of $\target{e}$}
+\begin{align*}
+\target{\alpha} &= \alpha \\
+\target{\tau_1 \times \tau_2} &= \target{\tau_1} \times \target{\tau_2} \\
+\target{\tau_1 \arrow \tau_2} &= \unit \arrow \target{\tau_1} \arrow \target{\tau_2} \\
+&\ldots \\
+\target{\epsilon} &= \epsilon \\
+\target{\Gamma, x \of \tau} &= \target{\Gamma}, x \of \target{\tau} \\
+\target{\Gamma, \alpha \of k} &= \target{\Gamma}, \alpha \of \target{k} \\
+\end{align*}
+
+Convoluted example:\\
+\begin{mathpar}
+\inferr{\Gamma \vd \lambda\bind{x \of \tau}{e} \of \tau \arrow \tau'
+                    \tto \lambda\bind{z \of \unit}{\lambda\bind{x \of \target{\tau}}{\target{e}}}}
+       {\Gamma \vd \tau \of \type \\
+        \Gamma, x \of \tau \vd e \of \tau \tto \target{e}}
+\end{mathpar}
+NOTE: the right part (after $\tto$) indicates the need to shift in terms of
+debruijn indices. \\
+
+More: \\
+\begin{mathpar}
+\inferr{\Gamma \vd e_1\ e_2 \of \tau' \tto \target{e_1} <> \target{e_2}}
+       {\Gamma \vd e_1 \of \tau \arrow \tau' \tto
+          \target{e_1}^{\of \target{\tau_1 \arrow \tau_2}
+                          = \unit \arrow \target{\tau} \arrow \target{\tau'}} \\
+        \Gamma \vd e_2 \of \tau \tto \target{e_2}^{\of \target{\tau}}}
+\end{mathpar}
+
+More (only well typed things translate): \\
+\begin{mathpar}
+\inferr{\Gamma \vd e_1\ e_2 \synthesis \tau' \tto \target{e_1} <> \target{e_2}} % TODO what is <>
+       {\Gamma \vd e_1 \synthesis \tau_1 \tto \target{e_1} \\
+        \Gamma \vd e_1 \whn \tau \arrow \tau' \\
+        \Gamma \vd e_2 \synthesis \tau_2 \tto \target{e_2} \\
+        \Gamma \vd \tau_2 \ace \tau \of \type}
+        % NOTE: we don't need this last one, we can optimize by skipping this rule
+\end{mathpar}
+
+
+\subsection{$\Gamma \vd e \of \tau \translatesto \target{e}$}
+\begin{mathpar}
+\inferr{\Gamma \vd x \of \tau \translatesto \target{x}}{\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd \langle e_1, e_2 \rangle \of \tau_1 \times \tau_2
+                        \tto \target{\langle e_1, e_2 \rangle}}
+       {\Gamma \vd e_1 \of \tau_1 \tto \target{e_1} \\
+        \Gamma \vd e_2 \of \tau_2 \tto \target{e_2}}
+
+\inferr{\Gamma \vd \pi_1 e \of \tau_1 \tto \target{\pi_1 e}}
+       {\Gamma \vd e \of \tau_1 \times \tau_2 \tto \target{e}}
+\end{mathpar}

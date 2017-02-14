@@ -1,7 +1,7 @@
 .PHONY: all clean veryclean
 
 all: notes.pdf
-	open notes.pdf
+	#open notes.pdf
 
 notes.pdf: *.tex
 	pdflatex -interaction nonstopmode $<
