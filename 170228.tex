@@ -1,0 +1,131 @@
+% Continued...
+\begin{mathpar}
+\inferr{\Gamma \vd e[c] \of \subst{c}{\alpha}{\tau} \tto
+          \bind{k^{\of \neg\target{\subst{c}{\alpha}{\tau}}}}
+            {\letbind{k'}{\lambda\bind{f \of \neg(\exists\bind{\alpha \of \target{k}}{\neg\target{\tau}})}{f(\pack [\target{c}, k] \as \exists\bind{\alpha \of \target{k}}{\neg\target{\tau}})}}{\target{e}}}
+       }
+       {\Gamma \vd e \of \forall\bind{\alpha \of k}{\tau} \tto
+          \bind{k'^{\of \neg\target{\forall\bind{\alpha \of k}{\tau}} = \neg\neg(\exists\bind{\alpha}{\target{k}}{\neg\target{\tau}})}}{\target{e}} \\
+        \Gamma \vd c \of k}
+\end{mathpar}
+Note $\neg\subst{\target{c}}{\alpha}{\target{\tau}} = \neg\target{\subst{c}{\alpha}{\tau}}$. \\
+
+% TODO:
+% We've talked about:
+%   Sums
+%   References
+%   Exns
+%   Primitives
+%   Recursive Types
+% Now, we need to talk about:
+%   Exceptions
+
+\subsection{Exceptions}
+\begin{flalign*}
+\target{\tau_1 \arrow \tau_2} &= \neg(\times[\target{\tau_1}, \neg\target{\tau_2}, \neg\exn] &\\
+\target{\forall\bind{\alpha \of k}{\tau}} &=
+  \neg(\exists\bind{\alpha \of \target{k}}{\neg\target\tau \times \neg\exn}) &\\
+\end{flalign*}
+
+Judgement: $\Gamma \vd e \of \tau \tto
+              \bind{k^{\of \neg\target\tau} k_{ex}^{\of \neg\exn}}{\target{e}}$
+\begin{mathpar}
+\inferr{\Gamma \vd x \of \tau \tto \bind{k k_{ex}}{k x}}{\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd \langle e_1, \dots, e_n \rangle \of x[\tau_1, \dots, \tau_n] \tto
+          \bind{k k_{ex}}{\letbind{k_1}{
+            \lambda\bind{x_1 \of \target{\tau_1}}{\dots
+              \letbind{k_n}{\lambda\bind{x_n \of \target{\tau_n}}
+                                        {k \langle x_i, \dots x_n \rangle}
+              }{\target{e_n}} \dots
+            }
+          }{\target{e_1}}}
+       }
+       {\Gamma \vd e_i \of \tau_i \tto
+          \bind{k_i^{\of \neg\target{\tau_1}} k_{ex_i}^{\of \neg\exn}}{\target{e_i}} \\
+        (i = 1 \dots n)}
+
+\inferr{\Gamma \vd \texttt{raise}_{\tau}{e} \of \tau \tto
+          \bind{k^{\of \neg\target\tau} k_{ex}^{\of \neg\exn}}{
+            \letbind{k'}{k_{ex}}{\target{e}}
+          }
+       }
+       {\Gamma \vd e \of \type \\
+        \Gamma \vd e \of \exn \tto
+          \bind{k'^{\of \neg\target{\exn}} k_{ex}'^{\of \neg\exn}}{\target{e}}}
+
+\inferr{\Gamma \vd \texttt{handle}(e_1, \bind{x}{e_2} \of \tau \tto
+          \bind{k^{\of \neg\target\tau} k_{ex}^{\of \neg\exn}}{
+            \letbind{k_{em}}{\lambda\bind{x \of \exn}{\target{e_2}}}{\target{e_1}}
+          }
+       }
+       {\Gamma \vd e \of \tau \tto \bind{k^{\of \neg\target\tau} k_{ex1}}{\target{e_1}} \\
+        \Gamma, x \of \exn \vd e_2 \of \tau \tto
+          \bind{k^{\of \neg\target\tau} k_{ex}}{\target{e_2}}}
+
+\inferr{\Gamma \vd \lambda\bind{x \of \tau_1}{e} \of \tau_1 \arrow \tau_2 \tto
+          \bind{k^{\of \neg\target{\tau_1 \arrow \tau_2} = \neg\neg(\times[\target{\tau_1}, \dots \target{\tau_n}} k_{ex}}{k(\lambda\bind{y \of x[\target{\tau_1}, \neg\target{\tau_2}, \neg\exn]}{
+            \letbind{x}{\pi_0 y}{\letbind{k'}{\pi_1 y}{\letbind{k_{ex}'}{\pi_2 y}{\target{e}}}}
+          }}
+       }
+       {\Gamma \vd \tau_1 \of \type \\
+        \Gamma, x \of \tau_1 \vd e \of \tau_2 \tto
+          \bind{k'^{\neg\target{\tau_2}} k_{ex}'}{\target{e_2}}}
+
+\inferr{\Gamma \vd \ap{e_1}{e_2} \of \tau' \tto
+          \bind{k^{\neg\target{\tau'}} k_{ex}}{
+            \letbind{k_1}{
+              (\lambda\bind{f \of \neg(x[\target\tau, \neg\target{\tau'}, \neg\exn])}{
+                \letbind{k_2}{
+                  \lambda\bind{x \of \target\tau}{f \langle x, k, k_{ex} \rangle}
+                }{\target{e_2}}
+              })
+            }{\target{e_1}}
+          }
+       }
+       {\Gamma \vd e_1 \of \tau \arrow \tau' \tto
+          \bind{k_1^{\neg\target{\tau \arrow \tau'} = \neg\neg(\times[\target{\tau}, \neg\target{\tau'}, \neg\exn])} k_{ex}}{\target{e_1}} \\
+        \Gamma \vd e_2 \of \tau \tto \bind{k_2^{\neg\target\tau} k_{ex2}}{\target{e_2}}}
+\end{mathpar}
+
+\subsection{Continuations}
+\begin{lstlisting}
+callcc : ('a cont $\arrow$ 'a) $\arrow$ 'a
+throw : ('a cont $\times$ 'a) $\arrow$ 'b
+\end{lstlisting}
+
+Typing Rules
+\begin{mathpar}
+\inferr{\Gamma \vd \letcc{\tau}{x}{e} \of \tau}
+       {\Gamma \vd \tau \of \type \\
+        \Gamma, x \of \cont{\tau} \vd e \of \tau}
+
+\inferr{\Gamma \vd \throw{\tau'}{e_1}{e_2} \of \tau'}
+       {\Gamma \vd \tau' \of \type \\
+        \Gamma \vd e_1 \of \tau \\
+        \Gamma \vd e_2 \of \cont{\tau}}
+\end{mathpar}
+
+Translation Rules
+\begin{mathpar}
+\inferr{\Gamma \vd \letcc{\tau}{x}{e} \of \tau \tto
+          \bind{k^{\of \neg\target\tau}}{\letbind{k'}{k}{\letbind{x}{k}{\target{e}}}}}
+       {\Gamma \vd \tau \of \type \\
+        \Gamma, x \of \cont{\tau} \vd e \of \tau \tto \bind{k'^{\neg\target\tau}}{\target e}}
+
+\inferr{\Gamma \vd \throw{\tau'}{e_1}{e_2} \of \tau' \tto
+          \bind{k^{\of\neg\target{\tau'}}}{
+            \letbind{k_1}{
+              \lambda\bind{x \of \tau}{
+                \letbind{x_2}{
+                  \lambda\bind{y \of \neg\target\tau}{\ap{y}{x}}
+                }{\target{e_2}}
+              }
+            }{\target{e_1}}
+          }
+       }
+       {\Gamma \vd \tau' \of \type \\
+        \Gamma \vd e_1 \of \tau \tto \bind{k_1^{\of\neg\target\tau}}{\target{e_1}} \\
+        \Gamma \vd e_2 \of \cont{\tau} \tto
+          \bind{k_2^{\of \neg\target{\cont{\tau}} = \neg\neg\target\tau}}{\target{e_2}}}
+\end{mathpar}

@@ -1,0 +1,49 @@
+\newpage
+\section{More Things}
+\begin{mathpar}
+\inferr{\Gamma \vd c \equiv c' \of 1}{\Gamma \vd c \of 1 \\ \Gamma \vd c' \of 1}
+
+\inferr{\Gamma \vd \ast \of 1}{\strut}
+\\
+\inferr{\Gamma \vd (\texttt{pack} [c, e] \mathop{as}
+          \exists\bind{\alpha \of k}{\tau}) \of \exists\bind{\alpha \of k}{\tau}}
+       {\Gamma \vd c \of k \\ \Gamma \vd e \of \subst{c}{\alpha}{\tau} \\
+        \Gamma, \alpha \of k \vd \tau \of \type}
+
+\inferr{\Gamma \vd \texttt{unpack} [\alpha, x] = e_1 in e_2 \of \tau'}
+       {\Gamma \vd e_1 \of \exists\bind{\alpha \of k}{\tau} \\
+        \Gamma, \alpha \of k, x \of \tau \vd e_2 \of \tau' \\
+        \Gamma \vd \tau' \of \type}
+\\
+% TODO: recursive type rules
+\inferr{\Gamma \vd \texttt{newtag} [\tau] \of \texttt{tag} t}{\Gamma \vd \tau \of \type}
+
+\inferr{\Gamma \vd \texttt{tag} (e_1, e_2) \of \exn}
+       {\Gamma \vd e_1 \of \texttt{tag} \\ \Gamma \vd e_2 \of \tau}
+
+\inferr{\Gamma \vd \texttt{iftag}(e_1, e_2, \bind{x}{e_3}, e_4) \of \tau'}
+       {\Gamma \vd e_1 \of \texttt{tag} \\
+        \Gamma \vd e_2 \of \exn \\
+        \Gamma, x \of e \vd e_3 \of \tau' \\
+        \Gamma \vd e_4 \of \tau'}
+\\
+\inferr{\Gamma \vd \texttt{unpack} [\alpha, x] = e_1 in e_2 \of \tau'}
+       {\Gamma \vd e_1 \of \exists\bind{\alpha \of k}{\tau} \\
+        \Gamma, \alpha \of k, x \of \tau \vd e_2 \of \tau' \\
+        \Gamma \vd \tau \of \type}
+
+\inferr{\Gamma \vd \texttt{unpack} [\alpha, x] = e_1 in e_2 \synthesis \subst{c}{\alpha}{\tau'}}
+       {\Gamma \vd e_1 \synthesis \tau_1 \\
+        \Gamma \vd c \of k \\
+        \Gamma \vd e_1 \whn \exists\bind{\alpha \of k}{\tau} \\
+        \Gamma, \alpha \of k, x \of \tau \vd e_2 \synthesis \tau' \\
+        \Gamma, \alpha \of k \vd \tau \ace \subst{c}{\alpha}{\tau'} \of \type}
+\end{mathpar}
+% TODO
+%For proof, suppose $\Gamma, \alpha \of k \vd \tau \of \type$ and
+%$\Gamma \vd \tau' \of \type$ and
+%$\Gamma, \alpha \of k \vd \tau \equiv \tau' \of \type$ and $\Gamma \vd c \of k$.\\
+%$\therefore \Gamma \vd \subst{c}{\alpha}{\tau} \equiv \subst{c}{\alpha}{\tau'} \of \type$
+%Note that $\subst{c}{\alpha}{\tau'} \equiv \tau'$.\\
+%$\therefore \Gamma, \alpha \of k \vd \subst{c}{\alpha}{\tau} \equiv \tau' \of \type$. \\
+%Since $\tau' \equiv \tau$, by transitivity, $\subst{c}{\alpha}{\tau'} \equiv \tau$.

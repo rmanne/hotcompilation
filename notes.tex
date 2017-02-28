@@ -8,6 +8,7 @@
 \usepackage{mathpartir}
 \usepackage{graphicx} % for the nice downarrow
 \usepackage{xifthen}
+\usepackage{cancel}
 
 \usepackage{titlesec}
 \titleformat*{\section}{\large\bfseries}
@@ -70,7 +71,7 @@
 %\newcommand{\nk}{\mathrel{\Uarrow}}
 \newcommand{\nk}{\mathrel{\uparrow}}
 \newcommand{\lift}{\mathrel{\uparrow}}
-\newcommand{\sk}{\mathrel{\le}} % TODO: triangle less equal
+\newcommand{\sk}{\mathrel{\unlhd}} % TODO: triangle less equal
 
 \newcommand{\synthesis}{\Rightarrow}
 \newcommand{\checking}{\Leftarrow}
@@ -95,7 +96,20 @@
 \DeclareMathOperator{\type}{Type}
 \DeclareMathOperator{\refraw}{ref}
 \DeclareMathOperator{\intt}{int}
+\DeclareMathOperator{\unit}{unit}
+\DeclareMathOperator{\as}{as}
+\newcommand{\exn}{\texttt{exn}}
+\newcommand{\halt}{\texttt{halt}}
+\newcommand{\letcc}[3]{\texttt{callcc}_{#1}\bind{#2}{#3}}
+\newcommand{\cont}[1]{\texttt{cont}~#1} % TODO
+\newcommand{\throw}[3]{\texttt{throw}_{#1} #2 \texttt{ to } #3}
+\newcommand{\callcc}{\texttt{callcc}}
+\newcommand{\pack}{\texttt{pack}}
+\newcommand{\unpack}{\texttt{unpack}}
+%\newcommand{\unpack}[4]{\texttt{unpack}[#1, #2] = #3~\texttt{in}~#4~\texttt{end}}
 \newcommand{\sref}[1]{\refraw(#1)}
+\newcommand{\letbind}[3]{\texttt{let}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
+\newcommand{\ap}[2]{#1\mathrel{ }#2}
 
 
 \title{HOT Compilation Notes}
@@ -138,5 +152,13 @@ SML \\
 \include{170209}
 
 \include{170214}
+
+\include{170216}
+
+\include{170221}
+
+\include{170223}
+
+\include{170228}
 
 \end{document}

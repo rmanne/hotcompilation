@@ -1,0 +1,64 @@
+\newpage
+\section{Continuation-Passing Style (CPS)}
+\begin{itemize}
+\item control-flow is explicit
+\item name all intermediate results
+\item reify control-flow (continuations) as data
+\end{itemize}
+The first two are often called ``monadic form'' or in literature,
+``A-normal form'' (or by Harper, 2/3 CPS).
+
+
+\subsection{Target Language}
+Still have $k$, $c$, and now we have expressions $e$ (which do not return)
+and values $v$. \\
+\begin{align*}
+k & \bnfdef \dots \\
+c & \bnfdef \dots \bnfalt \cancel{\tau \arrow \tau}
+    \bnfalt \cancel{\forall\bind{\alpha \of k}{\tau}}
+    \bnfalt \neg\tau \\
+e & \bnfdef \ap{v}{v} \bnfalt \texttt{\unpack} [\alpha,x] = v in e
+    \bnfalt \letbind{x}{\pi_i v}{e}
+    \bnfalt \letbind{x}{v}{e}
+    \bnfalt \texttt{halt}
+    \bnfalt \dots
+v & \bnfdef x \bnfalt \lambda\bind{x \of \tau}{e}
+    \bnfalt \texttt{pack} [c,v] as \exists\bind{\alpha \of k}{\tau}
+    \bnfalt \langle v_1, \dots, v_n \rangle
+    \bnfalt \dots \\
+\end{align*}
+
+Judgements: \\
+$\Gamma \vd v \of \tau$ \\
+$\Gamma \vd e \of 0$ \\
+($e$ does not return, so we use `0' for `OK')
+
+\begin{mathpar}
+\inferr{\Gamma \vd \lambda\bind{x \of \tau}{e} \of \neg\tau}
+       {\Gamma \vd \tau \of \type \\ \Gamma, x \of \tau \vd e \of 0}
+
+\inferr{\Gamma \vd \ap{v_1}{v_2} \of 0}
+       {\Gamma \vd v_1 \of \neg\tau \\ \Gamma \vd v_2 \of \tau}
+
+\inferr{\Gamma \vd \texttt{pack} [c,v] as \exists\bind{\alpha \of k}{\tau} \of
+                                          \exists\bind{\alpha \of k}{\tau}}
+       {\Gamma \vd c \of k \\
+        \Gamma \vd v \of \subst{c}{\alpha}{\tau} \\
+        \Gamma, \alpha \of k \vd \tau \of \type}
+
+\inferr{\Gamma \vd \texttt{unpack} [\alpha,x] = v \in e \of 0}
+       {\Gamma \vd v \of \exists\bind{\alpha \of k}{\tau}
+        \Gamma, \alpha \of k, x \of \tau \vd e \of 0}
+
+\inferr{\Gamma \vd \langle v_1, \dots v_2 \rangle \of x[\tau, \dots \tau_n]}
+       {\Gamma \vd v_i \of \tau_i \\ (\forall i \in [n])}
+
+\inferr{\Gamma v \letbind{x}{\pi_i v}{e} \of 0}
+       {\Gamma \vd v \of x[\tau_0, \dots \tau_{n - 1} \\
+        \Gamma, x \of \tau_i \vd e \of 0}
+
+\inferr{\Gamma \vd \letbind{x}{v}{e} \of 0}
+       {\Gamma \vd v \of \tau \\ \Gamma, x \of \tau \vd e \of 0}
+
+\inferr{\Gamma \vd \halt \of 0}{\strut}
+\end{mathpar}

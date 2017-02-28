@@ -1,0 +1,119 @@
+\subsection{Translation}
+(NOTE: this is syntax-directed)
+
+\begin{flalign*}
+\target{T} &= T &\\
+\target{\Pi\bind{\alpha \of k_1}{k_2}} &= \Pi\bind{\alpha \of \target{k_1}}{\target{k_2}} &\\
+\target{\singleton{c}} &= \singleton{\target{c}} &\\
+\target{1} &= 1 &\\
+\target{\alpha} &= \alpha &\\
+\target{\lambda\bind{\alpha \of k}{c}} &= \lambda\bind{\alpha \of \target{k}}{\target{c}} &\\
+\target{c_1\ c_2} &= \target{c_1}\ \target{c_2} &\\
+\target{\langle c_1, c_2 \rangle} &= \langle \target{c_1}, \target{c_2} \rangle &\\
+\target{\pi_1 c} &= \pi_1 \target{c} &\\
+\target{\pi_2 c} &= \pi_2 \target{c} &\\
+& &\\
+\target{\tau_1 \arrow \tau_2} &= \neg(\target{\tau_1} \times \neg\target{\tau_2}) &\\
+\target{x[\tau_1, \dots, \tau_n]} &= x[\target{\tau_1}, \dots, \target{\tau_n}] &\\
+\target{\forall\bind{\alpha \of k}{\tau}} &=
+  \neg(\exists\bind{\alpha \of \target{k}}{\neg\target{\tau}}) &\\
+\target{\exists\bind{\alpha \of k}{\tau}} &=
+  \exists\bind{\alpha \of \target{k}}{\target{\tau}} &\\
+& &\\
+\target{\epsilon} &= \epsilon &\\
+\target{\Gamma, \alpha \of k} &= \target{\Gamma}, \alpha \of \target{k} &\\
+\target{\Gamma, x \of \tau} &= \target{\Gamma}, x \of \target{\tau} &\\
+\target{[c_1/\alpha]c_2} &= [\target{c_1}/\alpha]\target{c_2} &\\
+\target{\alpha} &= \alpha &\\
+\end{flalign*}
+
+Type directed translation: \\
+Judgement: \\
+$\Gamma \vd e \of \tau \tto \bind{x}{\target{e}}$ \\
+Note here that this an expression where we compute the value of $\target{e}$
+and send it to the continuation $x$. \\
+
+Type Principle: \\
+If $\Gamma \vd e \of \tau \tto \bind{x}{\target{e}}$ (and $\vd \Gamma \ok$) then
+$\target{\Gamma}, k \of \neg\target{\tau} \vd \target{e} \of 0$. \\
+\note{$k$ is not the metavariable for kind in this case.}
+
+\subsection{$\Gamma \vd e \of \tau \tto \bind{k}{\target{e}}$}
+\begin{mathpar}
+\small
+\inferr{\Gamma \vd x \of \tau \tto \bind{k \of \neg\target{\tau}}{k x}}
+       {\Gamma(x) = \tau}
+
+\inferr{\Gamma \vd \pi_i e \of \tau_i \tto \bind{k \of \not \target{\tau_i}}{
+        \letbind{k'}{\bind{\lambda x \of \ast[\target{\tau_0}, \dots, \target{\tau_{n - 1}}]}
+            {\letbind{y}{\pi_i x}{k y}}}{\target{e}}
+       }}
+       {\Gamma \vd e \of x[\tau_0, \dots, \tau_{n - 1} \tto
+          \bind{k' \of \neg\target{x[\tau_0, \dots, \tau_{n - 1}]}}{\target{e}}}
+
+\inferr{\Gamma \vd \langle e_1, \dots e_n \rangle \of \ast[\tau_i, \dots, \tau_n] \tto \\
+        \bind{k \of \neg x[\target{\tau_1}, \dots, \target{\tau_n}}{
+          \letbind{k_1}{\lambda\bind{x_1 \of \target{\tau_1}}{
+            \letbind{k_2}{\lambda\bind{x_2 \of \target{\tau_2}}{
+              \dots
+              \letbind{k_n}{\lambda\bind{x_n}{\target{\tau_n}}{
+                k \langle x_1, \dots, x_n
+              }}{\target{e_n}}
+            }}{\target{e_2}}
+          }}{\target{e_1}}
+       }}
+       {\Gamma \vd e_i \of \tau_i \tto \bind{k_i \of \neg\target{\tau_i}}{\target{e_i}} \\
+        (i = 1 \dots n)}
+
+\inferr{\Gamma \vd \lambda\bind{x \of \tau_1}{e} \of \tau_1 \arrow \tau_2 \tto
+        \bind{k^{\of \not\target{\tau_1 \arrow \tau_2} =
+                     \not\not(\target{\tau_1} \times \not \target{\tau_2})}}
+        {k(\lambda\bind{y \of \target{\tau_1} \times \target{\tau_2}}
+          \letbind{x}{\pi_0 y}{\letbind{k}{\pi_1 y}{\target{e}}})}}
+       {\Gamma \vd \tau_1 \of \type \\
+        \Gamma, x \of \tau_1 \vd e \of \tau_2 \tto \bind{k' \of \not\target{\tau_2}}{\target{e}}}
+
+\inferr{\Gamma \vd e_1\ e_2 \of \tau' \tto \bind{k^{\neg\target{\tau'}}}{
+          \letbind{k_1}{
+            \lambda\bind{f \of \neg(\target{\tau} \times \neg\target{\tau'}}
+                        {\letbind{k_2}{\lambda\bind{x \of \target{\tau}}
+                                      {f \langle x, k \rangle}}
+                        }{\target{e_2}
+          }}{\target{e_1}}}}
+       {\Gamma \vd e_1 \of \tau \arrow \tau' \tto
+          \bind{k^{\of \neg\target{\tau \arrow \tau'} =
+                   \neg\neg(\target{\tau_1} \times \neg \target{\tau_2})}}
+               {\target{e}} \\
+        \Gamma \vd e_2 \of \tau \tto \bind{k_2^{\of \neg\target{\tau}}}{\target{e_2}}}
+
+\inferr{\Gamma \vd \texttt{pack}[c, e] \as \exists\bind{\alpha \of k}{\tau} \of \exists\bind{\alpha \of k}{e} \tto \\
+        \bind{k^{\of \neg\target{\exists\bind{\alpha \of k}{\tau}} = 
+                 \neg\exists\bind{\alpha \of \target{k}}{\target{\tau}}}}
+             {\letbind{k' \of \lambda\bind{x \of \target{\subst{c}{\alpha}{\tau}}}
+                                          {k(\texttt{pack}[\target{c}, x] \as \exists\bind{\alpha \of \target{k}}{\target{\tau}}}}{}{\target{e}}}
+       }
+       {\Gamma \vd c \of k \\
+        \Gamma \vd e \of \subst{c}{\alpha}{\tau} \tto \bind{k' \of \neg\target{[c/\alpha]\tau}}{\target{e}} \\
+        \Gamma, \alpha \of k \vd \tau \of \type}
+
+\inferr{\Gamma \vd \unpack[\alpha, x] = e_1 \texttt{in} e_2 \tto \\
+          \bind{k^{\of \neg \target{\tau'}}}{
+            \letbind{k_1}{
+            \lambda\bind{x_1 \of \exists{\alpha \of \target{k}}{\target{\tau}}}
+                        {\unpack[\alpha, x] = x_1 \texttt{in} [k/k_2]\target{e_2}}
+            }{\target{e_1}}
+          }
+       }
+       {\Gamma \vd e_1 \of \exists\bind{\alpha \of k}{\tau} \tto
+          \neg\exists\bind{\alpha \of \target{k}}{\target\tau} \\
+        \Gamma, \alpha \of k, x \of \tau \vd e_2 \of \tau' \tto
+          \bind{k_2^{\of \neg\target{\tau'}}}{\target{e_2}} \\
+        \Gamma \vd \tau \of \type
+       }
+
+\inferr{\Gamma \vd \Lambda\bind{\alpha \of k}{e} \of \forall\bind{\alpha \of k}{\tau} \tto
+          \bind{k^{\of \neg\target{\forall\bind{\alpha \of k}{\tau}} = \neg\neg(\exists\bind{\alpha \of \target{k}}{\target{\tau}})}}{k(\lambda\bind{x \of \exists\bind{\alpha \of \target{k}}{\neg\target{\tau}}}{\unpack[\alpha, k'] = x \texttt{in} \target{e}})}
+       }
+       {\Gamma \vd k \of \kind \\
+        \Gamma, \alpha \of k \vd e \of \tau \tto \bind{k'^{\of \neg\target{\tau}}}{\target{e}}}
+\end{mathpar}
