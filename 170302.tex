@@ -1,0 +1,127 @@
+\section{Closure Conversion}
+
+A closure is a tuple containing code and the environment that will be passed
+in as an additional argument to the code. The code is closed, with no open
+terms. \\
+
+Concrete example: \\
+$\lambda\bind{x \of \intt}{x + y + z}$ \\
+$\leadsto
+\langle (\lambda\bind{x \of \intt}{\lambda\bind{\env \of \intt \times \intt}
+          {\letbind{y}{\pi_0 \env}{\letbind{z}{\pi_1 \env}{x + y + z}}}}),
+\langle y, z \rangle \rangle$ \\
+$\ap{e}{5}$ \\
+$\leadsto
+\letbind{f}{\pi_0 e}{\letbind{\env}{\pi_1 e}{\ap{\ap{f}{5}}{\env}}}$ \\
+
+This can get really messy and really inefficient, so what we really want
+to do is convert some curried and some tupled functions and turn them into
+some special internal representation for multi-argument functions. \\
+
+Types may be different if the environment is different, so when converting,
+we can try something like, where we don't care about the existential, since
+we won't be manipulating it: \\
+$\target{\tau_1 \arrow \tau_2} = \exists\bind{\alpha_\env \of \type}
+  {(\tau_1 \arrow \alpha_\env \arrow \tau_2) \times \alpha_\env}$
+
+\subsection{Target Language (IL-Closure)}
+\begin{flalign*}
+\Delta;\Gamma &\vd e \of 0 &\\
+\Delta;\Gamma &\vd v \of \tau &\\
+\Gamma &\bnfdef \epsilon \bnfalt \Gamma, x \of \tau &\\
+\Delta &\bnfdef \epsilon \bnfalt \Delta, \alpha \of k &\\
+\end{flalign*}
+
+Only rule additional we need: \\
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd \lambda\bind{x \of \tau}{e} \of \neg\tau}
+       {\Delta \vd \tau \of \type \\
+        \Gamma; (\epsilon, x \of \tau) \vd e \of 0}
+\end{mathpar}
+
+\subsection{Type Translation}
+\begin{flalign*}
+\target{\alpha} &= \alpha &\\
+&\vdots &\\
+\target{\neg\tau} &= \exists\bind{\alpha_\env \of \type}
+  {\neg(\target{\tau} \times \alpha_\env) \times \alpha_\env} &\\
+\target{x[\tau_1, \dots, \tau_2]} &= x[\target{\tau_1}, \dots, \target{\tau_n}] &\\
+\end{flalign*}
+How would we deal with $\target{\forall\bind{\alpha \of k}{\tau}}$? Turns out
+it's really hard. But because of how we got rid of them back during CPS
+conversion, we don't even have to deal with it anymore!
+
+\subsection{Type Principle}
+If $\Delta; \Gamma \vd e \of 0 \tto \target{e}$ then $\target{\Delta}; \target{\Gamma} \vd \target{e} \of 0$. \\
+If $\Delta; \Gamma \vd v \of \tau \tto \target{v}$ then $\target{\Delta}; \target{\Gamma} \vd \target{v} \of \target{\tau}$. \\
+
+\subsection{$\Delta; \Gamma \vd e \of 0 \tto \target{e}$,
+            $\Delta; \Gamma \vd v \of \tau \tto \target{v}$}
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd x \of \tau \tto x}{\Gamma(x) = \tau}
+
+\inferr{\Delta; \Gamma \vd \langle v_1, \dots v_n \rangle \of x[\tau_1, \dots, \tau_n] \tto
+          \langle \target{v_1}, \dots, \target{v_n} \rangle}
+       {\Delta; \Gamma \vd v_i \of \tau_i \tto \target{v_i}}
+
+\small
+\inferr{\Delta; \Gamma \vd \lambda\bind{x \of \tau}{e} \of \neg\tau \tto
+        \pack[x[\target{\tau_1}, \dots, \target{\tau_n}],
+        \langle \\
+          (\lambda\bind{y \of \tau \times x[\target{\tau_1}, \dots, \target{\tau_n}]}{
+            \letbind{x}{\pi_0 y}{\letbind{\env}{\pi_1 y}{
+              \letbind{x_1}{\pi_0\env}{\dots \letbind{x_n}{\pi_{n - 1}\env}{\target{e}}}
+            }}
+          }),
+        \\ \langle x_1, \dots, x_n \rangle \rangle] \as
+        \exists\bind{\alpha_\env \of \type}
+          {\neg(\target{\tau} \times \alpha_\env) \times \alpha_\env}
+       }
+       {\Delta \vd \tau \of \type \\
+        \Delta; \Gamma, x \of \tau \vd e \of 0 \tto \target{e} \\
+        \Gamma = x_1 \of \tau_1, \dots, x_n \of \tau_n}
+\normalfont
+
+\inferr{\Delta; \Gamma \vd \ap{v_1}{v_2} \of 0 \tto
+          \unpack[\alpha_\env, x] = \target{v_1} \texttt{in}
+            \letbind{f}{\pi_0 x}{\letbind{\env}{\pi_1 x}{
+              f \langle \target{v_2}, \env \rangle
+            }}
+       }
+       {\Delta; \Gamma \vd v_1 \of \neg\tau \tto
+          \target{v_1}^{\of \target{\neg\tau} =
+                        \exists\bind{\alpha}{\neg(\target\tau \times \alpha) \times \alpha}} \\
+        \Delta; \Gamma \vd v_2 \of \tau \tto \target{v_2}^{\of \target\tau}}
+\end{mathpar}
+
+\vspace{1cm}
+% TODO
+To solve some inefficiency, instead of passing around the environment,
+instead, pass around the closure. \\
+In environment passing, we had 
+$\target{\tau_1 \arrow \tau_2} = \exists\bind{\alpha_\env \of \type}
+  {(\tau_1 \times \alpha_\env \arrow \tau_2) \times \alpha_\env}$. \\
+In closure passing, we have
+$\mu\bind{\beta}{\exists\bind{\alpha_\env}{\target{\tau_1} \times \beta \arrow \target{\tau_2} \times \alpha_\env}}$. \\
+
+We can apparently use this to understand objected oriented programming better
+and some of the research might not even be all that wrong. \\
+
+There's more stuff one can do $\dots$. \\
+
+
+\section{Hoisting}
+Type Translation: \\
+$\target{\tau} = \tau$ \\
+
+\subsection{Target Language: IL-Hoist}
+\begin{align*}
+c & \bnfdef \dots \bnfalt \forall\bind{\alpha \of k}{c} \\
+e & \bnfdef \dots \\
+v & \bnfdef \dots \bnfalt \lambda\bind{x \of \cancel{\tau}}{e}
+    \bnfalt v[c] \bnfalt \cancel{\Lambda\bind{\alpha \of k}{v}} \\
+f & \bnfdef \lambda\bind{x \of \tau}{e} \bnfalt \Lambda\bind{\alpha \of k}{f} \\
+b & \bnfdef x \mathrel{=} f \\
+P & \bnfdef \texttt{let}~b~\texttt{in}~P \bnfalt e \\
+\end{align*}
+To hoist the type: `type-erasure semantics`.

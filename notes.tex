@@ -4,11 +4,12 @@
 \usepackage{mathtools}
 \usepackage{latexsym}
 \usepackage{proof}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.5in]{geometry}
 \usepackage{mathpartir}
 \usepackage{graphicx} % for the nice downarrow
 \usepackage{xifthen}
 \usepackage{cancel}
+\usepackage{tikz}
 
 \usepackage{titlesec}
 \titleformat*{\section}{\large\bfseries}
@@ -98,6 +99,7 @@
 \DeclareMathOperator{\intt}{int}
 \DeclareMathOperator{\unit}{unit}
 \DeclareMathOperator{\as}{as}
+\newcommand{\env}{\texttt{env}}
 \newcommand{\exn}{\texttt{exn}}
 \newcommand{\halt}{\texttt{halt}}
 \newcommand{\letcc}[3]{\texttt{callcc}_{#1}\bind{#2}{#3}}
@@ -109,8 +111,33 @@
 %\newcommand{\unpack}[4]{\texttt{unpack}[#1, #2] = #3~\texttt{in}~#4~\texttt{end}}
 \newcommand{\sref}[1]{\refraw(#1)}
 \newcommand{\letbind}[3]{\texttt{let}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
-\newcommand{\ap}[2]{#1\mathrel{ }#2}
+\newcommand{\letbinds}[2]{\texttt{let}~#1~\texttt{in}~#2~\texttt{end}}
+\newcommand{\ap}[2]{#1\mathop{ }#2}
 
+\newcommand{\prodn}[1]{\langle #1_1 \dots #1_n \rangle}
+\newcommand{\Prodn}[1]{\times [ #1_1 \dots #1_n ]}
+
+\newcommand{\alloc}[1]{\texttt{alloc}[#1]}
+\newcommand{\fresh}[1]{\texttt{fresh}[#1]}
+\newcommand{\ext}[1]{\texttt{ext}~#1}
+
+%\newcommand{\lheadraw}[1]{
+%\begin{tikzpicture}[#1]
+%\coordinate (l) at (0, -1.1ex);
+%\coordinate (h) at (0, 1.1ex);
+%\draw (l) to[out=140, in=220] (h);
+%\draw (l) to[out=90, in=270] (h);
+%\end{tikzpicture}
+%}
+%\newcommand{\lhead}{\raisebox{-0.4ex}{\lheadraw{}}}
+\newcommand{\lhead}{(\kern-0.2em{\mid}}
+\newcommand{\rhead}{)\kern-0.48em{\mid} \kern+0.2em}
+%\newcommand{\rhead}{\mid\kern-0.5em{)}}
+\newcommand{\lsand}{\langle\kern-0.2em{\mid}}
+%\newcommand{\rsand}{\mid\kern-0.5em{\rangle}}
+\newcommand{\rsand}{\rangle\kern-0.48em{\mid} \kern+0.2em}
+\newcommand{\satom}[1]{\lhead #1 \rhead}
+\newcommand{\datom}[1]{\lsand #1 \rsand}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -160,5 +187,9 @@ SML \\
 \include{170223}
 
 \include{170228}
+
+\include{170302}
+
+\include{170307}
 
 \end{document}

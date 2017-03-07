@@ -1,0 +1,140 @@
+\subsection{Judgements}
+$\Delta; \Gamma \vd e \of 0 \tto let \vec{b} in \target{e}$ \\
+$\Delta; \Gamma \vd v \of \tau \tto let \vec{b} in \target{v}$ \\
+
+\subsection{$\Delta; \Gamma \vd f \of \tau$}
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd \Lambda\bind{\alpha \of k}{f} \of \forall\bind{\alpha \of k}{\tau}}
+       {\Delta, \alpha \of k; \Gamma \vd f \of \tau}
+
+\inferr{\Delta; \Gamma \vd \lambda\bind{x \of \tau}{e} \of \neg\tau}
+       {\Delta \vd \tau \of \type \\ \Delta; \Gamma, x \of \tau \vd e \of 0}
+\end{mathpar}
+
+\subsection{$\Gamma \vd P \of 0$}
+\begin{mathpar}
+\inferr{\Gamma \vd \letbind{x}{f}{P} \of 0}
+       {\cdot; \Gamma \vd f \of \tau \\ \Gamma, x \of \tau \vd P \of 0}
+
+\inferr{\Gamma \vd e \of 0}{\cdot; \Gamma \vd e \of 0}
+\end{mathpar}
+
+\subsection{$\Delta; \Gamma \vd v \of \tau \tto \letbinds{\vec{b}}{\target{v}}$}
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd x \of \tau \tto \letbinds{}{x}}{\Gamma(x) = \tau}
+
+\inferr{\Delta; \Gamma \vd \prodn{v} \of \Prodn{\tau}
+          \letbinds{\vec{b_1} \dots \vec{b_n}}{\langle{\prodn{\target{v}}}} % TODO: prodn target
+       }
+       {\Delta; \Gamma \vd v_i \of \tau_i \tto
+          \letbinds{\vec{b_i}}{\target{v_i}} \\ (\text{for} i = 1 \dots n)}
+
+\inferr{\Delta; \Gamma \vd v_1 v_2 \of 0 \tto
+          \letbinds{\vec{b_1}, \vec{b_2}}{\target{v_1}\target{v_2}}}
+       {\Delta; \Gamma \vd v_1 \of \neg\tau \tto \letbinds{\vec{b_1}}{\target{v_1}} \\
+        \Delta; \Gamma \vd v_2 \of \tau \tto \letbinds{\vec{b_2}}{\target{v_2}}}
+
+\inferr{\Delta; \Gamma \vd \lambda\bind{x \of \tau}{e} \of \neg\tau \tto
+          \letbinds{\vec{b}, y \mathrel{=} \Lambda\bind{\alpha_1 \of k_1}{
+            \dots \Lambda\bind{\alpha_n \of k_n}{\lambda\bind{x \of \target{\tau}}{\target{e}}}
+          }}{y[\alpha_1]\dots[\alpha_n]}}
+       {\Delta \vd \tau \of \type \\
+        \Delta; x \of \tau \vd e \of 0 \tto \letbinds{\vec{b}}{\target{e}} \\
+                % TODO: keep Lambda?
+        y \not\in FV(\Gamma), y \ne x, y \not\in BV(\vec{b}) \\ % TODO same as \fresh{y}
+        \Delta = \alpha_1 \of k_1, \dots, \alpha_n \of k_n}
+\end{mathpar}
+
+\subsection{$\Delta; \Gamma \vd e \of 0 \tto \letbinds{\vec{b}}{\target{v}}$}
+\begin{mathpar}
+\inferr{\vd_{\texttt{top}} e \of 0 \tto
+          \letbinds{b_1}{\dots \letbinds{b_n}{\target{e}}}}
+       {\cdot; \cdot \vd e \of 0 \tto \letbinds{\vec{b}}{\target{e}} \\
+          (\vec{b} = b_1, \dots, b_n)}
+\end{mathpar}
+
+
+TODO: ASIDE PREVIOUS: CLOSURE CONVERSION
+\begin{mathpar}
+\inferr{\vd_{\texttt{top}} e \of 0 \tto \target{e}}
+       {\cdot; \cdot \vd e \of 0 \tto \target{e}}
+\end{mathpar}
+
+TODO: ASIDE PREVIOUS: CPS CONVERSION
+\begin{mathpar}
+\inferr{\vd_{\texttt{top}} e \of \tau \tto \\
+            \letbind{k}{
+              \lambda\bind{x \of \target{\tau}}{\halt}
+            }{\letbind{k_{ex}}{
+              \lambda\bind{x \of \exn}{
+                \letbind{\_}{\texttt{print "uncaught exception"}}{\halt}
+              }
+            }{\target{e}}}}
+       {\cdot; \cdot \vd e \of \tau \tto \bind{k k_{ex}}{\target{e}}}
+\end{mathpar}
+
+
+\section{Alloc}
+
+\subsection{Target Language: IL-Alloc}
+\begin{align*}
+a & \bnfdef x = \alloc{n} \bnfalt x = \pi_i y \bnfalt \pi_i y \Coloneq v \bnfalt x = v \\
+e & \bnfdef \letbinds{a}{e} \bnfalt x\mathop{ }x \bnfalt \halt \\
+v & \bnfdef x \bnfalt \dots \bnfalt \cancel{\prodn{v}} \\
+f & \bnfdef \lambda\bind{x \of \tau}{e} \\
+b & \bnfdef x \mathrel{=} f \\
+P & \bnfdef \texttt{let}~b~\texttt{in}~P \bnfalt e \\
+\end{align*}
+
+\subsection{Judgements and Translations}
+$\Delta; \Gamma \vd e \of 0 \tto \target{e}$ \\
+$\Delta; \Gamma \vd v \of \tau \tto \letbinds{\vec{a}}{\target{v}}$
+
+\subsection{$\Delta; \Gamma \vd v \of \tau \tto \letbinds{\vec{a}}{\target{v}}$}
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd \prodn{v} \of \Prodn{\tau} \tto
+         \letbinds{\vec{a_1} \dots \vec{a_n}
+           , x = \alloc{n}
+           , \pi_0 x = \target{v_1}
+           \dots
+           , \pi_{n - 1} x = \target{v_n}
+         }{x}
+       }
+       {\Delta; \Gamma \vd v_i \of \tau_i \tto \letbinds{\vec{a_i}}{\target{v_i}} \\
+        (\texttt{for}~i = 1 \dots n) \\ \fresh{x}}
+\end{mathpar}
+
+\subsection{$\Delta; \Gamma \vd e \of 0 \tto \target{e}$}
+\begin{mathpar}
+\inferr{\Delta; \Gamma \vd \letbind{x}{v}{e} \of 0 \tto
+          \letbinds{a_1}{\dots \letbinds{a_n}{\letbind{x}{\target{v}}{\target{e}}}}}
+       {\Delta; \Gamma \vd v \of \tau \tto \letbinds{\vec{a}} in \target{v} \\
+        \Delta; \Gamma, x \of \tau \vd e \of 0 \tto \target{e} \\
+        \vec{a} = a_1, \dots, a_n}
+
+\inferr{\Delta; \Gamma \vd v_1 v_2 \of 0 \tto
+          \letbinds{\vec{a_1}}{\letbinds{\vec{a_2}}{\target{v_1} \target{v_2}}}}
+       {\Delta; \Gamma \vd v_1 \of \neg\tau \tto \letbinds{\vec{a_1}}{\target{v_1}} \\
+        \Delta; \Gamma \vd v_2 \of \tau \tto \letbinds{\vec{a_2}}{\target{v_2}}}
+\end{mathpar}
+
+
+\section{Module}
+\subsection{Target Language: IL-Module}
+\begin{align*}
+k & \bnfdef \type \bnfalt \singleton{c} \bnfalt \Pi\bind{\alpha \of k_1}{k_2}
+    \bnfalt \Sigma\bind{\alpha \of k_1}{k_2} \bnfalt 1 \\
+c & \bnfdef \dots \bnfalt c_1 \arrow c_2 \bnfalt \forall\bind{\alpha \of k}{c} \bnfalt \dots \\
+e & \bnfdef \dots \bnfalt \ext{M} \\
+\sigma & \bnfdef 1 \bnfalt \satom{k} \bnfalt \datom{\tau}
+         \bnfalt \Pi^\texttt{gen}\bind{\alpha \of \sigma_1}{\sigma_2} % generative functor
+         \bnfalt \Pi^\texttt{app}\bind{\alpha \of \sigma_1}{\sigma_2} % applicative functor
+         \bnfalt \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \\
+M & \bnfdef \ast \bnfalt \satom{k} \bnfalt \datom{e} \\
+\end{align*}
+
+% TODO
+%$\lhead x \rhead a b c$ \\
+%$\lsand x \rsand a b c$ \\
+%$( x ) a b c$ \\
+

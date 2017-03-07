@@ -30,6 +30,7 @@ Note $\neg\subst{\target{c}}{\alpha}{\target{\tau}} = \neg\target{\subst{c}{\alp
 Judgement: $\Gamma \vd e \of \tau \tto
               \bind{k^{\of \neg\target\tau} k_{ex}^{\of \neg\exn}}{\target{e}}$
 \begin{mathpar}
+\small
 \inferr{\Gamma \vd x \of \tau \tto \bind{k k_{ex}}{k x}}{\Gamma(x) = \tau}
 
 \inferr{\Gamma \vd \langle e_1, \dots, e_n \rangle \of x[\tau_1, \dots, \tau_n] \tto
@@ -63,10 +64,10 @@ Judgement: $\Gamma \vd e \of \tau \tto
         \Gamma, x \of \exn \vd e_2 \of \tau \tto
           \bind{k^{\of \neg\target\tau} k_{ex}}{\target{e_2}}}
 
-\inferr{\Gamma \vd \lambda\bind{x \of \tau_1}{e} \of \tau_1 \arrow \tau_2 \tto
-          \bind{k^{\of \neg\target{\tau_1 \arrow \tau_2} = \neg\neg(\times[\target{\tau_1}, \dots \target{\tau_n}} k_{ex}}{k(\lambda\bind{y \of x[\target{\tau_1}, \neg\target{\tau_2}, \neg\exn]}{
+\inferr{\Gamma \vd \lambda\bind{x \of \tau_1}{e} \of \tau_1 \arrow \tau_2 \tto \\
+          \bind{k^{\of \neg\target{\tau_1 \arrow \tau_2} = \neg\neg(\times[\target{\tau_1}, \neg\target{\tau_2}, \neg\exn])} k_{ex}}{k(\lambda\bind{y \of x[\target{\tau_1}, \neg\target{\tau_2}, \neg\exn]}{
             \letbind{x}{\pi_0 y}{\letbind{k'}{\pi_1 y}{\letbind{k_{ex}'}{\pi_2 y}{\target{e}}}}
-          }}
+          })}
        }
        {\Gamma \vd \tau_1 \of \type \\
         \Gamma, x \of \tau_1 \vd e \of \tau_2 \tto
