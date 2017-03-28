@@ -94,9 +94,12 @@
 \DeclareMathOperator{\ok}{ok}
 \DeclareMathOperator{\fv}{FV}
 \DeclareMathOperator{\id}{id}
-\DeclareMathOperator{\type}{Type}
+%\newcommand{\type}{\texttt{T}
+\DeclareMathOperator{\type}{T}
+%\DeclareMathOperator{\type}{Type}
 \DeclareMathOperator{\refraw}{ref}
 \DeclareMathOperator{\intt}{int}
+\DeclareMathOperator{\stringt}{string}
 \DeclareMathOperator{\unit}{unit}
 \DeclareMathOperator{\as}{as}
 \newcommand{\env}{\texttt{env}}
@@ -113,13 +116,18 @@
 \newcommand{\letbind}[3]{\texttt{let}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
 \newcommand{\letbinds}[2]{\texttt{let}~#1~\texttt{in}~#2~\texttt{end}}
 \newcommand{\ap}[2]{#1\mathop{ }#2}
+\newcommand{\Ap}[2]{#1\mathop{\cdot}#2}
 
+\newcommand{\pair}[1]{\langle #1 \rangle}
 \newcommand{\prodn}[1]{\langle #1_1 \dots #1_n \rangle}
 \newcommand{\Prodn}[1]{\times [ #1_1 \dots #1_n ]}
 
 \newcommand{\alloc}[1]{\texttt{alloc}[#1]}
 \newcommand{\fresh}[1]{\texttt{fresh}[#1]}
 \newcommand{\ext}[1]{\texttt{ext}~#1}
+\newcommand{\api}{\Pi^\texttt{ap}}
+\newcommand{\alam}[2]{\lambda^\texttt{ap}\bind{#1}{#2}}
+\newcommand{\sig}{\texttt{sig}}
 
 %\newcommand{\lheadraw}[1]{
 %\begin{tikzpicture}[#1]
@@ -136,8 +144,22 @@
 \newcommand{\lsand}{\langle\kern-0.2em{\mid}}
 %\newcommand{\rsand}{\mid\kern-0.5em{\rangle}}
 \newcommand{\rsand}{\rangle\kern-0.48em{\mid} \kern+0.2em}
-\newcommand{\satom}[1]{\lhead #1 \rhead}
-\newcommand{\datom}[1]{\lsand #1 \rsand}
+\newcommand{\satom}[1]{\lhead #1\, \rhead}
+\newcommand{\datom}[1]{\lsand #1\, \rsand}
+
+\newcommand{\Fst}[1]{\texttt{Fst}(#1)}
+\newcommand{\Snd}[1]{\texttt{Snd}(#1)}
+\newcommand{\Ext}[1]{\texttt{Ext}\ #1}
+
+\newcommand{\seal}[2]{#1 :> #2}
+\newcommand{\Pig}[2]{\Pi^\texttt{gen}\bind{#1}{#2}}
+\newcommand{\lambdag}[2]{\lambda^\texttt{gen}\bind{#1}{#2}}
+\newcommand{\Pia}[2]{\Pi^\texttt{app}\bind{#1}{#2}}
+\newcommand{\lambdaa}[2]{\lambda^\texttt{app}\bind{#1}{#2}}
+
+\newcommand{\letp}[3]{\texttt{letp}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
+
+\newcommand{\sd}[2]{[\bind{#1}{#2}]}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -191,5 +213,13 @@ SML \\
 \include{170302}
 
 \include{170307}
+
+\include{170309}
+
+\include{170321}
+
+\include{170323}
+
+\include{170328}
 
 \end{document}

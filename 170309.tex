@@ -1,0 +1,206 @@
+\begin{align*}
+k & \bnfdef \type \bnfalt \singleton{c} \bnfalt \Pi\bind{\alpha \of k_1}{k_2}
+    \bnfalt \Sigma\bind{\alpha \of k_1}{k_2} \bnfalt 1 \\
+\tau, c
+  & \bnfdef \alpha \bnfalt \lambda\bind{\alpha \of k}{c} \bnfalt \ap{c}{c}
+    \bnfalt \pair{c, c} \bnfalt \pi_1 c \bnfalt \pi_2 c \bnfalt \ast
+    \bnfalt \tau \arrow \tau \bnfalt \prodn{\tau} \bnfalt \cancel{\ext{M}} \\
+e & \bnfdef \dots \bnfalt \ext{M} \\
+\sigma & \bnfdef 1 \bnfalt \satom{k} \bnfalt \datom{\tau}
+         \bnfalt \Pi^\texttt{gen}\bind{\alpha\cancel{/s} \of \sigma_1}{\sigma_2}
+         % generative functor
+         \bnfalt \Pi^\texttt{app}\bind{\alpha\cancel{/s} \of \sigma_1}{\sigma_2}
+         % applicative functor
+         \bnfalt \Sigma\bind{\alpha\cancel{/s} \of \sigma_1}{\sigma_2} \\
+M & \bnfdef s \bnfalt \ast \bnfalt \satom{c} \bnfalt \datom{e}
+    \bnfalt \lambda^\texttt{gen}\bind{\alpha/s \of \sigma}{M}
+    \bnfalt \lambda^\texttt{app}\bind{\alpha/s \of \sigma}{M}
+    \bnfalt \Ap{M}{M}
+    \bnfalt \ap{M}{M}
+    \bnfalt \pair{M, M}
+    \bnfalt \Pi_1 M
+    \bnfalt \Pi_2 M
+    \bnfalt M :> \sigma
+    \\
+\Gamma & \bnfdef \epsilon \bnfalt \Gamma, \alpha \of k \bnfalt \Gamma, x \of \tau
+         \bnfalt \Gamma, \alpha/s \of \sigma \\
+\end{align*}
+
+$\sigma$ for signatures \\
+$M$ for modules \\
+$\alpha/s$ is called twinning.
+$\alpha$ stands for the static portion of $s$. \\
+in $\sigma$, we don't need twinning because no kind ever contains $s$, so
+we can't actually even make use of it even on accident. \\
+
+So how does this map to SML modules? \\
+\begin{lstlisting}
+sig
+  type t
+  val f : t
+end
+
+struct
+  type t = int
+  val f = 12
+end
+\end{lstlisting}
+The signature translates to $\Sigma\bind{\alpha\cancel{/s} \of \satom{\type}}{\datom{\ext{s}}}$ \\
+The structure translates to $\pair{\satom{\intt}, \datom{12}}$ \\
+
+\begin{enumerate}
+\item Phase distinction: static vs. dynamic \\
+Type Checking relies only on static components \\
+so: static can never depend on dynamic \\
+Having a 2nd class module system solves this problem. \\
+If we had a 1st class module system, we need to try very hard to preserve
+phase distinction. \\
+
+\item Static Projection
+\begin{mathpar}
+\inferr{\Gamma \vd \Fst{M} \gg c}{}
+
+\inferr{\Gamma \vd \Fst{\ast} \gg \ast}{}
+
+\inferr{\Gamma \vd \Fst{\satom{c}} \gg c}{}
+
+\inferr{\Gamma \vd \Fst{\datom{c}} \gg \ast}{}
+
+\inferr{\Gamma \vd \Fst{\Ap{M_1}{M_2}} \gg \ap{c_1}{c_2}}
+       {\Gamma \vd \Fst{M_1} \gg c_1 \\ \Gamma \vd \Fst{M_2} \gg c_2 \\ }
+
+\inferr{\Gamma \vd \Fst{\pair{M_1, M_2}} \gg \pair{c_1, c_2}}
+       {\Gamma \vd \Fst{M_1} \gg c_1 \\ \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd \Fst{\pi_i M} \gg \pi_i c}{\Gamma \vd \Fst{M} \gg c}
+
+\inferr{\Gamma \vd \Fst{s} \gg \alpha}{\alpha/s \of \sigma \in \Gamma}
+
+\inferr{\Gamma \vd \Fst{\lambda^\texttt{ap}\bind{s \of \sigma}{M}} \gg
+          \lambda\bind{\alpha \of \Fst{\sigma}}{c}}
+       {\Gamma, \alpha/s \of \sigma \vd \Fst{M} \gg c}
+\end{mathpar}
+
+\item Twinning
+\item Sealing is an effect
+\end{enumerate}
+
+\begin{align*}
+\Fst{1} &= 1 \\
+\Fst{\satom{k}} &= k \\
+\Fst{\datom{k}} &= 1 \\
+\Fst{\api\bind{\alpha/s \of \sigma_1}{\sigma_2}} &=
+  \Pi\bind{\alpha \of \Fst{\sigma_1}}{\Fst{\sigma_2}} \\
+\Fst{\Sigma\bind{\alpha/s \of \sigma_1}{\sigma_2}} &=
+  \Sigma\bind{\alpha \of \Fst{\sigma_1}}{\Fst{\sigma_2}} \\
+\end{align*}
+
+
+\subsection{$\Gamma \vd s \of \sigma$}
+\begin{mathpar}
+\cancel{\inferr{\Gamma \vd \alpha \of k}{\Gamma(\alpha) = k}}
+
+\inferr{\Gamma \vd \alpha \of k}{\alpha \of k \in \Gamma}
+
+\inferr{\Gamma \vd \alpha \of \Fst{\sigma}}{\alpha/s \of \sigma \in \Gamma}
+\end{mathpar}
+
+\begin{mathpar}
+\inferr{\Gamma \vd s \of \sigma}{\alpha/s \of \sigma \in \Gamma}
+
+\inferr{\Gamma \vd \ast \of 1}{\strut}
+
+\inferr{\Gamma \vd \satom{c} \of \satom{k}}{\Gamma \vd c \of k}
+
+\inferr{\Gamma \vd \datom{e} \of \datom{\tau}}{\Gamma \vd e \of \tau}
+
+\inferr{\Gamma \vd \alam{\alpha/s \of \sigma_1}{M} \of \api\bind{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \sigma_1 \of \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd M \of \sigma_2}
+
+\inferr{\Gamma \vd \Ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma_2}}
+       {\Gamma \vd M_1 \of \api\bind{\alpha \of \sigma_1}{\sigma_2} \\
+        \Gamma \vd M_2 \of \sigma_1 \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd \pair{M_1, M_2} \of \sigma_1 \times \sigma_2}
+       {\Gamma \vd M_1 \of \sigma_2 \\ \Gamma \vd M_2 \of \sigma_2}
+
+\inferr{\Gamma \vd \pi_1 M \of \sigma_1}
+       {\Gamma \vd M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+
+\inferr{\Gamma \vd \pi_2 M \of \subst{\pi_1 c}{\alpha}{\sigma_2}}
+       {\Gamma \vd M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \\
+        \Gamma \vd \Fst{M} \gg c}
+
+\inferr{\Gamma \vd M \of \sigma'}
+       {\Gamma \vd M \of \sigma \\ \Gamma \vd \sigma \le \sigma'}
+\end{mathpar}
+
+\subsection{$\Gamma \vd s \of \sig$, $\Gamma \vd \sigma \le \sigma $}
+\begin{mathpar}
+\inferr{\Gamma \vd \sigma \le \sigma}{\Gamma \vd \sigma \of \sig}
+
+\inferr{\Gamma \vd \sigma_1 \le \sigma_3}
+       {\Gamma \vd \sigma_1 \le \sigma_2 \\ \Gamma \vd \sigma_2 \le \sigma_3}
+
+\inferr{\Gamma \vd \satom{k} \le \satom{k'}}{\Gamma \vd k \le k'}
+
+\cancel{\inferr{\Gamma \vd \datom{\tau} \le \datom{\tau'}}
+       {\Gamma \vd \tau \equiv \tau' \of \type}}
+
+\inferr{\Gamma \vd \api\bind{\alpha \of \sigma_1}{\sigma_2} \le
+          \api\bind{\alpha \of \sigma_1'}{\sigma_2'}}
+       {\Gamma \vd \sigma_1' \le \sigma_1 \\
+        \Gamma, \alpha \of \Fst{\sigma_1'} \vd \sigma_2 \le \sigma_2' \\
+        \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig}
+
+\inferr{\Gamma \vd \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \le
+          \Sigma\bind{\alpha \of \sigma_1'}{\sigma_2'}}
+       {\Gamma \vd \sigma_1' \le \sigma_1 \\
+        \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \le \sigma_2' \\
+        \Gamma, \alpha \of \Fst{\sigma_1'} \vd \sigma_2' \of \sig}
+\end{mathpar}
+
+\begin{mathpar}
+\inferr{\Gamma \vd 1 \of \sig}{\strut}
+
+\inferr{\Gamma \vd \satom{k} \of \sig}{\Gamma \vd k \of \kind}
+
+\inferr{\Gamma \vd \datom{\tau} \of \sig}{\Gamma \vd \tau \of \type}
+
+\inferr{\Gamma \vd \api\bind{\alpha \of \sigma_1}{\sigma_2} \of \sig}
+       {\Gamma \vd \sigma \of \sig \\
+        \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig}
+\end{mathpar}
+(Last rule also works for $\Pi^\texttt{gen}$ and $\Sigma$ \\
+
+\begin{mathpar}
+\inferr{\Gamma \vd \sigma \equiv \sigma \of \sig}
+       {\Gamma \vd \sigma \of \sig}
+
+\inferr{\Gamma \vd \sigma_2 \equiv \sigma_1 \of \sig}
+       {\Gamma \vd \sigma_1 \equiv \sigma_2 \of \sig}
+
+\inferr{\Gamma \vd \sigma_1 \equiv \sigma_3 \of \sig}
+       {\Gamma \vd \sigma_1 \equiv \sigma_2 \of \sig \\
+        \Gamma \vd \sigma_2 \equiv \sigma_3 \of \sig}
+
+\inferr{\Gamma \vd \satom{k} \equiv \satom{k'} \of \sig}
+       {\Gamma \vd k \equiv k' \of \kind}
+
+\inferr{\Gamma \vd \datom{\tau} \equiv \datom{\tau'} \of \sig}
+       {\Gamma \vd \tau \equiv \tau' \of \type}
+
+\inferr{\Gamma \vd \api\bind{\alpha \of \sigma_1}{\sigma_2} \equiv
+          \api\bind{\alpha \of \sigma_1'}{\sigma_2'} \of \sig}
+       {\Gamma \vd \sigma_1 \equiv \sigma_1' \of \sig \\
+        \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \equiv \sigma_2' \of \sig}
+\end{mathpar}
+(Last rule also works for $\Pi^\texttt{gen}$ and $\Sigma$ \\
+
+
+% TODO:
+If we have $\Gamma \vd M \of \sigma \tto [c,e]$, we can split it up into its
+static portion and the rest of it, ``phase separation''. More on this
+next time.

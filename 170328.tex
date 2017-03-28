@@ -1,0 +1,179 @@
+\newpage
+\subsection{Extentionality Rules} % TODO title
+Suppose we had some \\
+$F \of \Pia{\alpha \of \sigma_1}{\sigma_2}$ where \\
+$\Fst{F} \gg \varphi$ \\
+
+Then, $F \of \singleton{\varphi \of \Pia{\alpha \of \sigma_1}{\sigma_2}}$
+should be true, but we have no way of proving it right now.\\
+
+\begin{mathpar}
+\inferr{\Gamma \vd_P M \of \Pia{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd_P M \of \Pia{\alpha \of \sigma_1}{\sigma_2'} \\
+        \Gamma, \alpha \of \sigma_1 \vd_P \Ap{M}{\alpha} \of \sigma_2}
+
+\inferr{\Gamma \vd M \of \sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \pi_1 M \of \sigma_1 \\
+        \Gamma \vd \Fst{M} \gg c \\
+        \Gamma \vd \pi_2 M \of \subst{\pi_1 c}{\alpha}{\sigma_2} \\
+        \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig}
+
+\inferr{\Gamma \vd f \of \singleton{\varphi \of \Pia{\alpha \of \sigma_1}{\sigma_2}}}
+       {f \of \Pia{\alpha \of \sigma_1}{\sigma_2} \\
+        \alpha/s \of \sigma_1 \vd \ap{f}{s} \of \singleton{\ap{\varphi}{\alpha} \of \sigma_2}}
+\end{mathpar}
+(Note in the last one, $\Pia{\alpha \of \sigma_1}{\sigma_2}$ is equivalent to
+$\Pia{\alpha \of \sigma_1}{\singleton{\ap{\varphi}{\alpha} \of \sigma_2}}$.) \\
+
+Also: % TODO
+\begin{mathpar}
+\inferr{\Gamma \vd_P M \of \satom{k}}
+       {\Gamma \vd_P M \of \satom{k'} \\
+        \Gamma \vd \Fst{M} \gg c \\
+        \Gamma \vd c \of k}
+\end{mathpar}
+
+% TODO
+Selfification property: \\
+If $\vd \Gamma \ok$, $\Gamma \vd M \of \sigma$, $\Gamma \vd \Fst{M} \gg c$ \\
+then $\Gamma \vd M \of \singleton{c \of \sigma}$.
+
+
+\subsection{$\Gamma \vd M \synthesis \sigma$}
+\begin{mathpar}
+\inferr{\Gamma \vd_P s \synthesis \singleton{\alpha \of \sigma}}
+       {\alpha/s \of \sigma \in \Gamma}
+
+\inferr{\Gamma \vd_P \satom{c} \synthesis \satom{k}}{\Gamma \vd c \synthesis k}
+
+\inferr{\Gamma \vd_P \datom{e} \synthesis \datom{\tau}}{\Gamma \vd e \synthesis \tau}
+
+\inferr{\Gamma \vd_P \lambdag{\alpha/s \of \sigma_1}{M} \synthesis
+          \Pig{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \sigma_1 \checking \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_\kappa M \synthesis \sigma_2}
+
+\inferr{\Gamma \vd_I \ap{M_1}{M_2} \synthesis \subst{c_2}{\alpha}{\sigma'}}
+       {\Gamma \vd_\kappa M_1 \synthesis \Pig{\alpha \of \sigma}{\sigma'} \\
+        \Gamma \vd_P M_2 \checking \sigma \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd_P \lambdaa{\alpha/s \of \sigma_1}{M} \synthesis
+          \Pia{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \sigma_1 \checking \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_P M \synthesis \sigma_2}
+
+\inferr{\Gamma \vd \Ap{M_1}{M_2} \synthesis \subst{c_2}{\alpha}{\sigma'}}
+       {\Gamma \vd_\kappa M_1 \synthesis \Pia{\alpha \of \sigma}{\sigma'} \\
+        \Gamma \vd_P M_2 \checking \sigma \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+% TODO: wait, so why did we not want to just call them all kappa? cup is the higher of the two
+% we always can forget right...?
+\inferr{\Gamma \vd_{\kappa_1 \cup \kappa_2} \pair{\alpha/s = M_1, M_2} \synthesis
+          \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd_{\kappa_1} M_1 \synthesis \sigma_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_{\kappa_2} M_2 \synthesis \sigma_2}
+
+\inferr{\Gamma \vd_P \pi_1 M \synthesis \sigma_1}
+       {\Gamma \vd_P M \synthesis \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+
+\inferr{\Gamma \vd_P \pi_2 M \synthesis \subst{\pi_1 c}{\alpha}{\sigma_2}}
+       {\Gamma \vd_P M \synthesis \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \\
+        \Gamma \vd \Fst{M} \gg c}
+
+\inferr{\Gamma \vd_I \seal{M}{\sigma} \synthesis \sigma}
+       {\Gamma \vd \sigma \checking \sig \\
+        \Gamma \vd_\kappa M \checking \sigma}
+
+\inferr{\Gamma \vd_I \letbind{\alpha/s}{M_1}{M_2} \of \sigma_2 \synthesis \sigma_2}
+       {\Gamma \vd_{\kappa_1} M_1 \synthesis \sigma_1 \\
+        \Gamma \vd \sigma_2 \checking \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_{\kappa_2} M_2 \checking \sigma_2}
+
+\inferr{\Gamma \vd \letp{\alpha/s}{M_1}{M_2} \synthesis \subst{c_1}{\alpha}{\sigma_2}}
+       {\Gamma \vd_P M_1 \synthesis \sigma_1 \\
+        \Gamma \vd \Fst{M_1} \gg c_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_\kappa M_2 \synthesis \sigma_2}
+\end{mathpar}
+
+\subsection{$\Gamma \vd M \checking \sigma$}
+\begin{mathpar}
+\inferr{\Gamma \vd_\kappa M \checking \sigma}
+       {\Gamma \vd_\kappa M \synthesis \sigma' \\
+        \Gamma \vd \sigma' \unlhd \sigma} % TODO
+\end{mathpar}
+
+\subsection{$\Gamma \vd e \of \tau$}
+\begin{mathpar}
+\inferr{\Gamma \vd \Ext{M} \synthesis \tau}
+       {\Gamma_\kappa M \synthesis \datom{\tau}}
+\end{mathpar}
+
+\subsection{Closing}
+We skipped $\Gamma \vd \sigma_1 \unlhd \sigma_2$ and
+$\Gamma \vd \sigma \checking \sig$ because they are fairly straightforward.
+
+% NOTE: purity class is an output, can make input if you really want
+% Coding note:
+%   Everything you return should be some result sum type with:
+%     Pure of sig * con
+%     Impure of sig
+%   where in the pure case, we also pair the signature with its Fst
+
+\newpage
+\section{Phase Splitting}
+With phase distinction, we separate out the static (Fst) and dynamic components. \\
+Target language is IL-Direct, which we already discussed in great detail. % TODO: find it
+
+Judgements: \\
+$\sigma \leadsto [\bind{\alpha \of k}{\tau}]$ \\
+$\Gamma \vd_P M \of \sigma \leadsto [c, e]$ \\
+$\Gamma \vd_\mp M \of \sigma \leadsto e$ \\
+
+% TODO Sanity case
+If $\Gamma \vd \sigma \of \sig$, $\sigma \leadsto [\bind{\alpha \of k}{\tau}]$ \\
+then $\bar\Gamma \vd k \of \kind$, $\bar\Gamma, \alpha \of k \vd \tau \of \type$. \\
+If $\sigma \leadsto [\bind{\alpha \of k}{\tau}]$ then $\Fst{\sigma} = k$. \\
+
+If $\sigma \leadsto [\bind{\alpha \of k}{\tau}]$, $\Gamma \vd_P M \of \sigma \leadsto [c, e]$ \\
+then $\bar\Gamma \vd c \of k$, $\bar\Gamma \vd e \of \subst{c}{\alpha}{\tau}$. \\
+
+If $\sigma \leadsto [\bind{\alpha \of k}{\tau}]$, $\Gamma \vd_I M \of \sigma \leadsto e$ \\
+then $\bar\Gamma \vd e \of \exists\bind{\alpha \of k}{\tau}$. \\
+
+\subsection{$\sigma \leadsto [\bind{\alpha \of k}{\tau}]$}
+\begin{mathpar}
+\inferr{1 \leadsto \sd{\alpha \of 1}{\unit}}{\strut}
+
+\inferr{\satom{k} \leadsto \sd{\alpha \of k}{\unit}}{\strut}
+
+% NOTE: don't forget to lift the \tau because it previous was not in a binding
+\inferr{\datom{\tau} \leadsto \sd{\alpha \of 1}{\tau}}{\strut}
+
+\inferr{\Pia{\alpha \of \sigma_1}{\sigma_2} \leadsto
+          \sd{\beta \of \Pi\bind{\alpha \of k_1}{k_2}}
+            {\forall\bind{\alpha \of k_1}
+              {\subst{\alpha}{\alpha_1}{\tau_1} \arrow
+               \subst{\ap{\beta}{\alpha}}{\alpha_2}{\tau_2}}}}
+       {\sigma_1 \leadsto \sd{\alpha_1 \of k_1}{\tau_1} \\
+        \sigma_2 \leadsto \sd{\alpha_2 \of k_2}{\tau_2}}
+
+\inferr{\Pig{\alpha \of \sigma_1}{\sigma_2} \leadsto \sd{\beta \of 1}{
+          \forall\bind{\alpha \of k_1}{\subst{\alpha}{\alpha_1}{\tau_1} \arrow
+            \exists\bind{\alpha \of k_2}{\tau_2}}}}
+       {\sigma_1 \leadsto \sd{\alpha_1 \of k_1}{\tau_1} \\
+        \sigma_2 \leadsto \sd{\alpha_2 \of k_2}{\tau_2}}
+
+\inferr{\Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \leadsto
+          \sd{\beta \of
+            \Sigma\bind{\alpha \of k_1}{k_2}
+          }{
+            \subst{\pi_1 \beta}{\alpha_1}{\tau_1} \times
+            \subst{
+              \pi_1 \beta, \pi_2 \beta
+            }{\alpha,\alpha_2}{\tau_2}
+          }}
+       {\sigma_1 \leadsto \sd{\alpha_1 \of k_1}{\tau_1} \\
+        \sigma_2 \leadsto \sd{\alpha_2 \of k_2}{\tau_2}}
+\end{mathpar}

@@ -1,0 +1,149 @@
+% examples?
+Consider
+\begin{lstlisting}
+$\sigma$ =
+  sig
+    type t
+    val x : t
+    val f : t $\to$ t
+    val g : t $\to$ bool
+  end
+
+$M_1$ =
+  struct
+    type t = bool
+    val x = true
+    val f = not
+    val g = $\lambda$x. x
+  end
+
+$M_2$ =
+  struct
+    type t = int
+    val x = 0
+    val f = $\lambda$x. x + 1
+    val g = even?
+  end
+\end{lstlisting}
+
+$M_1 \of \sigma$, $M_2 \of \sigma$ \\
+note that the two $t$s are different unless they are sealed, eg: \\
+$\seal{M_1}{\sigma}$, $\seal{M_2}{\sigma}$ \\
+
+We don't want to even be able to ask questions about the equivalence of
+the internal types ($t$) after being sealed. \\
+We will call $\seal{M_1}{\sigma}$ ``indeterminate''. \\
+
+Going back to one of the old judgements,
+$\Gamma \vd \Fst{M} \gg c$ only applies when $M$ is ``determinate''. \\
+
+
+Now, consider \\
+$F \of \sigma_1 \arrow \sigma_2$ \\ % TODO: overset the arrow with \texttt{gen}
+$M \of \sigma_1$ \\
+$\ap{F}{M} \of \sigma_2$ \\
+
+Typesystem has to track whether or not a module is pure. (Pure in this sense
+meaning determinate meaning unsealed.) We treat sealing as an effect. \\ % TODO: see pfpl
+
+Thus, we use judgement assigning with the purity class $\kappa$: 
+$\Gamma \vd_\kappa M \of \sigma$, with $\kappa \bnfdef P \bnfalt I$ \\
+
+\subsection{$\Gamma \vd e \of \tau$}
+Only new rule we need:
+\begin{mathpar}
+\inferr{\Gamma \vd \Ext{M} \of \tau}{\Gamma \vd_I M \of \datom{\tau}}
+\end{mathpar}
+
+\subsection{$\Gamma \vd_\kappa M \of \sigma$}
+\begin{mathpar}
+\inferr{\Gamma \vd_P \ast \of 1}{\strut}
+
+\inferr{\Gamma \vd_P s \of \sigma}{\alpha/s \of \sigma \in \Gamma}
+
+\inferr{\Gamma \vd_P \satom{c} \of \satom{k}}{\Gamma \vd c \of k}
+
+\inferr{\Gamma \vd_P \datom{e} \of \datom{\tau}}{\Gamma \vd e \of \tau}
+
+\inferr{\Gamma \vd_I M \of \sigma}{\Gamma \vd_P M \of \sigma} % the forgetting rule
+
+\inferr{\Gamma \vd_\kappa M \of \sigma'}
+       {\Gamma \vd_\kappa M \of \sigma \\
+        \Gamma \vd \sigma \le \sigma'}
+
+\inferr{\Gamma \vd_I \seal{M}{\sigma} \of \sigma}{\Gamma \vd_I M \of \sigma}
+  % here, we don't actually need \vd_I on the top, we can use \kappa, but since
+  % we allow the forgetting rule, we can just use that to convert back as desired
+
+                   % no effects in a lambda
+\inferr{\Gamma \vd_P \lambdag{\alpha/s \of \sigma_1}{M} \of \Pig{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \sigma_1 \of \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_I M \of \sigma_2}
+
+\inferr{\Gamma \vd_I \ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma'}}
+       {\Gamma \vd_I M_1 \of \Pig{\alpha \of \sigma}{\sigma'} \\
+        \Gamma \vd_P M_2 \of \sigma \\ % need to be able to compute static part of M_2, so pure
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd_P \lambdaa{\alpha/s \of \sigma_1}{M} \of \Pia{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd \sigma_1 \of \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_P M \of \sigma_2}
+
+\inferr{\Gamma \vd_\kappa \Ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma'}}
+       {\Gamma \vd_\kappa M_1 \of \Pia{\alpha \of \sigma}{\sigma'} \\
+        \Gamma \vd_P M_2 \of \sigma \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+% for this, we ensure that both have the same purity class because if either is
+% impure, we need the result to be impure (see: forgetting rule)
+\inferr{\Gamma \vd_\kappa \pair{M_1, M_2} \of \sigma_1 \times \sigma_2}
+       {\Gamma \vd_\kappa M_1 \of \sigma_1 \\ \Gamma \vd_\kappa M_2 \of \sigma_2}
+
+\inferr{\Gamma \vd_P \pi_1 M \of \sigma_1} % we don't NEED purity here, but just for uniformity
+       {\Gamma \vd_P M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+
+\inferr{\Gamma \vd_P \pi_2 M \of \subst{c}{\alpha}{\sigma_1}}
+       {\Gamma \vd_P M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \\
+        \Gamma \vd \Fst{M} \gg c}
+\end{mathpar}
+
+\subsection{$\Gamma \vd \Fst{M} \gg k$}
+\begin{flalign*}
+\Fst{1} &= 1 &\\
+\Fst{\satom{k}} &= k &\\
+\Fst{\datom{\tau}} &= 1 &\\
+\Fst{\Pia{\alpha \of \sigma_1}{\sigma_2}} &=
+  \Pi\bind{\alpha \of \Fst{\sigma_1}}{\Fst{\sigma_2}} &\\
+\Fst{\Pig{\alpha \of \sigma_1}{\sigma_2}} &= 1 &\\
+\Fst{\Sigma\bind{\alpha \of \sigma_1}{\sigma_2}} &=
+  \Sigma\bind{\alpha \of \Fst{\sigma_1}}{\Fst{\sigma_2}} &\\
+\end{flalign*}
+
+\subsection{$\Gamma \vd \Fst{M} \gg c$}
+\begin{mathpar}
+\inferr{\Gamma \vd \Fst{s} \gg \alpha}{\alpha/s \of \sigma \in \Gamma}
+
+\inferr{\Gamma \vd \Fst{\ast} \gg \ast}{\strut}
+
+\inferr{\Gamma \vd \Fst{\satom{c}} \gg c}{\strut}
+
+\inferr{\Gamma \vd \Fst{\datom{e}} \gg \ast}{\strut}
+
+\inferr{\Gamma \vd \Fst{\lambdaa{\alpha/s \of \sigma_1}}
+                       {\lambda\bind{\alpha \of \Fst{\sigma_1}}{c}}}
+       {\Gamma \vd \alpha/s \of \sigma_1 \vd \Fst{M} \gg c}
+
+\inferr{\Gamma \vd \Fst{\Ap{M_1}{M_2}} \gg \ap{c_1}{c_2}}
+       {\Gamma \vd \Fst{M_1} \gg c_1 \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd \Fst{\lambdag{\alpha/s \of \sigma_1}{M}} \gg \ast}{\strut}
+
+\cancel{\inferr{\Gamma \vd \Fst{\ap{M_1}{M_2}} \gg }{\strut}}
+
+\inferr{\Gamma \vd \Fst{\pair{M_1, M_2}} \gg \pair{c_1, c_2}}
+       {\Gamma \vd \Fst{M_1} \gg c_1 \\
+        \Gamma \vd \Fst{M_2} \gg c_2}
+
+\inferr{\Gamma \vd \Fst{\pi_1 M} \gg \pi_i c}{\Gamma \vd \Fst{M} \gg c}
+\end{mathpar}

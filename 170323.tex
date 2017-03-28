@@ -1,0 +1,109 @@
+\normalsize
+Need to support some sort of {\tt let} binding in the language in order for
+us to do anything with sealed modules. So let's change the language as such: \\
+$M \bnfdef \dots \bnfalt \letbind{\alpha/s}{M}{M}$ \\
+
+with typing rule
+\begin{mathpar}
+\inferr{\Gamma \vd_I \letbind{\alpha/s}{M_1}{M_2}}
+       {\Gamma \vd_I M_1 \of \sigma_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_I M_2 \of \sigma_2 \\
+        \Gamma \vd \sigma_2 \of \sig}
+
+\inferr{\Gamma \vd \letbind{\alpha/s}{M_1}{M_2} \Rightarrow }
+       {\Gamma \vd M_1 \Rightarrow \sigma_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd M_2 \Rightarrow \sigma_2}
+\end{mathpar}
+Big idea \#5: ``Avoidance Problem''. \\
+There is no ``best'' signature for this last rule above. \\
+Problem: \\
+Given $\Gamma, \alpha \of k \vd \sigma \of \sig$ \\
+obtain $\sigma'$ s.t. \\
+1. $\Gamma \vd \sigma' \of \sig$ \\
+2. $\Gamma, \alpha \of k \vd \sigma \le \sigma'$ \\
+3. forall $\sigma''$ if $\Gamma \vd \sigma'' \of \sig$ and
+    $\Gamma, \alpha \of k \vd \sigma \le \sigma''$ then $\Gamma \vd \sigma' \le \sigma''$ \\
+But this problem has no solution. \\
+
+Example: $\alpha \of \type \vd (\type \arrow \singleton{\alpha}) \times \singleton{\alpha} \of \kind$ \\
+This is a sub-kind of $\sigma\bind{\beta \of \type \arrow \type}{\singleton{\beta \intt}}$ \\
+And also a sub-kind of $\sigma\bind{\beta \of \type \arrow \type}{\singleton{\beta \stringt}}$ \\
+But these two that we just generated are not equivalent. \\
+
+so instead, we ask the programmer for the $\sigma_2$ \\
+$M \bnfdef \dots \bnfalt \letbind{\alpha/s}{M}{M \of \sigma}$ \\
+\begin{mathpar}
+\inferr{\Gamma \vd \letbind{\alpha/s}{M_1}{M_2 \of \sigma_2} \synthesis \sigma_2 }
+       {\Gamma \vd M_1 \synthesis \sigma_1 \\
+        \Gamma \vd \sigma \checking \sig \\
+        \Gamma, \alpha/s \of \sigma_1 \vd M_2 \checking \sigma_2}
+\end{mathpar}
+
+But there is an issue we cannot deal with in this language. When we parse a
+structure into a tuple, we would have a bunch of $\of \sigma$ in the nested
+lets (multiple structures one after another in a structure). While this is not
+incorrect, it's grossly inefficient. \\
+So instead, we add one more feature: \\
+$M \bnfdef \dots \bnfalt \letbind{\alpha/s}{M}{M \of \sigma} \bnfalt \pair{\alpha/s = M, M}$ \\
+\begin{mathpar}
+\inferr{\Gamma \vd_\kappa \pair{\alpha/s = M_1, M_2} \of
+          \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}}
+       {\Gamma \vd_\kappa M_1 \of \sigma_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_\kappa M_2 \of \sigma_2}
+\end{mathpar}
+This is somewhat motivated by the Avoidance Problem.
+
+% TODO: what is this motivated by
+Add one more feature: \\
+$M \bnfdef \dots \bnfalt \letp{\alpha/s}{M}{M}$ \\
+\begin{mathpar}
+\inferr{\Gamma \vd_\kappa \letp{\alpha/s}{M_1}{M_2} \of \subst{c_1}{\alpha}{\sigma_2}}
+       {\Gamma \vd_P M_1 \of \sigma_1 \\
+        \Gamma, \alpha/s \of \sigma_1 \vd_\kappa M_2 \of \sigma_2 \\
+        \Gamma \vd \Fst{M_1} \gg c_1}
+\end{mathpar}
+
+Note, in the first rule in the next section below, we find that we can't just
+use $\sigma$ because it's not the ``best'' signature. So we need to introduce
+a new $\singleton{\sigma}$ \\
+Kind level: \\
+\begin{flalign*}
+\singleton{c \of \type} &= \singleton{c} &\\
+\singleton{c \of \Pi\bind{\alpha \of k_1}{k_2}} &= \Pi\bind{\alpha \of k_1}{\singleton{\ap{c}{\alpha} \of k_2}} &\\
+\singleton{c \of \Sigma\bind{\alpha \of k_1}{k_2}} &= \singleton{\pi_1 c \of k_1} \times \singleton{\pi_2 c \of \subst{\pi_1 c}{\alpha}{k_2}} &\\
+\singleton{c \of \singleton{c'}} &= \singleton{c} &\\
+\end{flalign*}
+What we think the property should look like: \\
+``$c' \of \singleton{c \of k}$ iff $c' \of k$ and $c \equiv c' \of k$''
+``$ \vd_P M \of \singleton{c \of \sigma}$ iff $M \of \sigma$
+  and $\Fst{M} \equiv c \of \Fst{\sigma}$'' % TODO
+Module level: \\
+\begin{flalign*}
+\singleton{c \of 1} &= 1 &\\
+\singleton{c \of \satom{k}} &= \satom{\singleton{c \of k}} &\\
+\singleton{c \of \datom{\tau}} &= \datom{\tau} &\\
+\singleton{c \of \Pig{\alpha \of \sigma_1}{\sigma_2}} &= \Pig{\alpha \of \sigma_1}{\sigma_2} &\\
+\singleton{c \of \Pia{\alpha \of \sigma_1}{\sigma_2}} &=
+  \Pia{\alpha \of \sigma_1}{\singleton{\ap{c}{\alpha} \of \sigma_2}} &\\
+\singleton{c \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}} &=
+  \singleton{\pi_1 c \of \sigma_1} \times
+  \singleton{\pi_2 c \of \subst{\pi_1 c}{\alpha}{\sigma_2}} &\\
+\end{flalign*}
+
+% TODO
+NOTE selfification: when you take the signature of a module and write it back
+into the module. \\
+
+So now, we want the property to be: \\
+If $\Gamma \vd_P M \of \sigma$ and $\Gamma \vd \Fst{M} \gg c$
+  then $\Gamma \vd_P M \of \singleton{c \of \sigma}$ \\
+
+But as it is right now, it's not actually true. So like back in the singleton
+calculus, we need to add in the extentionality rules: \\
+
+\subsection{$\overset{+}{\Gamma} \vd_{\overset{-}{\kappa}} \overset{+}{M}
+               \synthesis \overset{-}{\sigma}$}
+\begin{mathpar}
+\inferr{\Gamma \vd_P s \synthesis \singleton{\alpha \of \sigma}}
+       {\alpha/s \of \sigma \in \Gamma}
+\end{mathpar}
