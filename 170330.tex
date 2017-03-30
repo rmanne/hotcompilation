@@ -1,0 +1,155 @@
+\subsection{$\sigma \splitsto \sd{k}{\tau}$}
+Let's revisit all of the above rules in the Debruijn world.
+
+% TODO: motivation?
+\begin{mathpar}
+\inferr{\Gamma \vd \bind{m}{s} \of \Gamma', A}
+       {\Gamma \vd s \of \Gamma' \\ \Gamma \vd m \of A[s]}
+
+\inferr{\Gamma, \Gamma' \vd \lift k \of \Gamma}
+       {|\Gamma'| = k}
+\end{mathpar}
+
+If $\Gamma \vd \sigma \of \sig$ and $\sigma \splitsto \sd{\alpha \of k}{\tau}$
+then $\Gamma \vd k \of \kind$, $\Gamma, \alpha \of k \vd \tau \of \type$. \\
+
+Now the Debruijn form: \\
+If $\Gamma \vd \sigma \of \sig$ and $\sigma \splitsto \sd{k}{\tau}$
+then $\Gamma \vd k \of \kind$ and $\Gamma, k \vd \tau \of \type$.
+
+\begin{mathpar}
+  \inferr{1 \splitsto \sd{1}{\unit}}{\strut}
+
+  \inferr{\satom{k} \splitsto \sd{k}{\unit}}{\strut}
+
+  \inferr{\datom{\tau} \splitsto \sd{1}{\tau[\lift]}}{\strut}
+
+  % See NOTE 0, 1, 2 for info on how we got this
+  \inferr{\Pia{\sigma_1}{\sigma_2} \splitsto
+            \sd{\Pi\bind{k_1}{k_2}}
+              {\forall\bind{k_1[\lift]}
+                {\tau_1[\bind{0}{\lift^2}] \arrow
+                 \tau_2[\bind{\ap{1}{0}}{\bind{0}{\lift^2}}]}}}
+         {\sigma_1 \splitsto \sd{k_1}{\tau_1} \\
+          \sigma_2 \splitsto \sd{k_2}{\tau_2}}
+
+  % NOTE 0 These are the derivations on how we got the case for Pi app
+  %\inferr{\Gamma, A \vd 0 \of A[\lift]}{\strut}
+  %\inferr{\Gamma \vd i \of A[\lift^{i + 1}]}{\Gamma(i) = A}
+  %\inferr{\Gamma, \Pi\bind{k_1}{k_2}, k_1[\lift] \vd \bind{0}{\lift^2} \of \Gamma, k_1}
+  %       {\Gamma, \Pi\bind{k_1}{k_2}, k_1[\lift] \vd 0 \of k_1[\lift^2] \\
+  %        \Gamma, \Pi\bind{k_1}{k_2}, k_1[\lift] \vd \lift^2 \of \Gamma} \\
+  %\inferr{\Gamma, \Pi\bind{k_1}{k_2}, k_1[\lift] \vd
+  %          \bind{\ap{1}{0}}{\bind{0}{\lift^2}} \of \Gamma, k_1, k_2}
+  %       {\inferr{\Gamma, \Pi\bind{k_1}{k_2}, k_1[\lift] \vd
+  %                  \ap{1}{0} \of k_2[\bind{0}{\lift^2}]}
+  %               {\dots \vd 1 \of (\Pi\bind{k_1}{k_2})[\lift^2] \\
+  %                \dots \vd 0 \of k_1[\lift^2]}
+  %        \\ \dots } \\
+
+  \inferr{\Pig{\of \sigma_1}{\sigma_2} \splitsto \sd{1}{
+              \forall\bind{k_1[\lift]}{\tau_1[0.\lift^2] \arrow
+              \exists\bind{k_2[0.\lift^2]}{\tau_2[0.1.\lift^3]}}}}
+         {\sigma_1 \splitsto \sd{k_1}{\tau_1} \\
+          \sigma_2 \splitsto \sd{k_2}{\tau_2}}
+
+  % NOTE 3 These is one of the derivations for Pi gen
+  %\inferr{\Gamma, 1, k_1[\lift], k_2[0.\lift^2] \vd 0.1.\lift^3 \of \Gamma, k_1, k_2}
+  %       {\dots \vd 0 \of k_2[1.\lift^3] \\
+  %        \inferr{\dots \vd 1.\lift^3 \of \Gamma, k_1}
+  %               {\dots \vd 1 \of k_1[\lift^3] \\
+  %                \dots \vd \lift^3 \of \Gamma}}
+
+  \inferr{\Sigma\bind{\sigma_1}{\sigma_2} \splitsto
+            \sd{
+              \Sigma\bind{k_1}{k_2}
+            }{
+              \tau_1[\pi_1 0. \lift] \times
+              \tau_2[\pi_2 0. \pi_1 0. \lift]
+            }
+         }
+         {\sigma_1 \splitsto \sd{k_1}{\tau_1} \\
+          \sigma_2 \splitsto \sd{k_2}{\tau_2}}
+
+  % NOTE 4 These are the derivations for sigma
+  %\inferrule{
+  %  \inferr{\Gamma, \Sigma\bind{k_1}{k_2} \vd \pi_2 0 \of k_2[\pi_1 0.\lift]}
+  %         {\Gamma, \Sigma\bind{k_1}{k_2} \vd 0 \of \Sigma\bind{k_1[\lift]}{k_2[0.\lift^2]}}
+  %  \inferr{\Gamma, \Sigma\bind{k_1}{k_2} \vd \pi_1 0. \lift \of \Gamma, k_1}
+  %         {\inferr{\Gamma, \Sigma\bind{k_1}{k_2} \vd \pi_1 0 \of k_1[\lift]}
+  %                 {\Gamma, \Sigma\bind{k_1}{k_2} \vd 0 \of
+  %                    \Sigma\bind{k_1[\lift]}{k_2[0.\lift^2]}} \\
+  %          \Gamma, \Sigma\bind{k_1}{k_2} \vd \lift \of \Gamma}
+  %}{
+  %  \Gamma, \Sigma\bind{k_1}{k_2} \vd \pi_2 0. \pi_1 0. \lift \of \Gamma, k_1, k_2
+  %}
+\end{mathpar}
+
+%% NOTE 1
+%$\Gamma \vd \Pia{\sigma_1}{\sigma_2} \of \sig$ \\
+%$\Gamma \vd \sigma_1 \of \sig$ \\
+%$\Gamma, k_1 \vd \sigma_2 \of \sig$ \\
+%$\Gamma \vd k_1 \of \kind$ \\
+%$\Gamma, k_1 \vd \tau_1 \of \type$ \\
+%$\Gamma, k_1 \vd k_2 \of \kind$ \\
+%$\Gamma, k_1, k_2 \vd \tau_2 \of \type$ \\
+%
+%where: \\
+%$\sigma_1 \splitsto \sd{k_1}{\tau_1}$ \\
+%$\sigma_2 \splitsto \sd{k_2}{\tau_2}$ \\
+%
+%% NOTE 2
+%$(\Pi\bind{k_1}{k_2})[\lift^i] = \Pi\bind{k_1[\lift^i]}{k_2[\bind{0}{\lift^{i + 1}}]}$
+
+\subsection{$\target{\Gamma} \tto \Gamma$}
+\begin{flalign*}
+  \target{\epsilon} &= \epsilon &\\
+  \target{\Gamma, \alpha \of k} &= \target{\Gamma}, \alpha \of k &\\
+  \target{\Gamma, x \of \tau} &= \target{\Gamma}, x \of \tau &\\
+  \target{\Gamma, \alpha/s \of \sigma} &= \target{\Gamma}, \alpha \of k, s \of \tau &\\
+\end{flalign*}
+*NOTE: in the last one, $\sigma \splitsto \sd{\alpha \of k}{\tau}$
+
+\subsection{$\Gamma \vd_P M \of \sigma \splitsto \sd{c}{e}$}
+\begin{mathpar}
+  \inferrule{
+    \alpha/s \of \sigma \in \Gamma
+  }{ % Coding note: algorithmically, we will be inferring \sigma, and it will
+     % actually be the best signature (eg: \singleton{\alpha : \sigma})
+    \Gamma \vdp s \of \sigma \splitsto \sd{\alpha}{s}
+  }
+
+  \axiom{\Gamma \vdp \ast \of 1 \splitsto \sd{\ast}{\pair{}}}
+
+  \inferrule{
+    \Gamma \vd c \of k
+  }{
+    \Gamma \vdp \satom{c} \of \satom{k} \splitsto \sd{c}{\pair{}}
+  }
+
+  \inferrule{
+    \Gamma \vd e \of \tau
+  }{ % note the tau is shifted, but the e is not shifted, care for debruijn
+    \Gamma \vd \datom{e} \of \datom{\tau} \splitsto \sd{\ast}{e}
+  }
+
+  \inferrule{
+    \Gamma \vd \sigma_1 \of \sig \\
+    \Gamma, \alpha/s \of \sigma_1 \vdp M \of \sigma_2 \splitsto \sd{c}{e} \\
+    \sigma_1 \splitsto \sd{\alpha_1 \of k_1}{\tau_1}
+  }{
+    \Gamma \vd \lambdaa{\alpha/s \of \sigma_1}{M} \of \Pi\bind{\alpha \of \sigma_1}{\sigma_2}
+      \splitsto
+    \sd{
+      \lambda\bind{\alpha \of k_1}{c}
+    }{
+      \Lambda\bind{\alpha \of k_1}{
+        \lambda\bind{s \of \subst{\alpha}{\alpha_1}{\tau_1}}{
+          e
+        }
+      }
+    }
+  }
+\end{mathpar}
+
+\subsection{$\Gamma \vd_I M \of \sigma \splitsto e$}

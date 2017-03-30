@@ -71,7 +71,7 @@
 \newcommand{\Uarrow}{\mathrel{\scalebox{1.2}[1]{$\Uparrow$}}}
 %\newcommand{\nk}{\mathrel{\Uarrow}}
 \newcommand{\nk}{\mathrel{\uparrow}}
-\newcommand{\lift}{\mathrel{\uparrow}}
+\newcommand{\lift}{\uparrow}
 \newcommand{\sk}{\mathrel{\unlhd}} % TODO: triangle less equal
 
 \newcommand{\synthesis}{\Rightarrow}
@@ -159,7 +159,12 @@
 
 \newcommand{\letp}[3]{\texttt{letp}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
 
-\newcommand{\sd}[2]{[\bind{#1}{#2}]}
+\newcommand{\vdp}{\vd_P}
+\newcommand{\vdi}{\vd_I}
+\newcommand{\splitsto}{\leadsto}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\sd}[2]{\red{[}#1\mathrel{\red{,}}#2\red{]}}
+\newcommand{\axiom}[1]{\inferrule{#1}{\strut}}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -221,5 +226,7 @@ SML \\
 \include{170323}
 
 \include{170328}
+
+\include{170330}
 
 \end{document}
