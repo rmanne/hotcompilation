@@ -58,7 +58,8 @@
 \newcommand{\vd}{\vdash}
 \newcommand{\of}{\mathrel{:}}
 \newcommand{\bind}[2]{#1\mathrel{.} #2}
-\newcommand{\subst}[3]{[#1 \mathbin{/} #2]#3}
+%\newcommand{\subst}[3]{[#1 \mathbin{/} #2]#3}
+\newcommand{\subst}[3]{[#1/#2]#3}
 
 \newcommand{\oversetr}[2]{\overset{#2}{#1}}
 
@@ -110,6 +111,8 @@
 \newcommand{\throw}[3]{\texttt{throw}_{#1} #2 \texttt{ to } #3}
 \newcommand{\callcc}{\texttt{callcc}}
 \newcommand{\pack}{\texttt{pack}}
+\newcommand{\packbind}[3]{\texttt{pack}~\sd{#1}{#2}~\texttt{as}~#3}
+\newcommand{\unpackbind}[4]{\texttt{unpack}~[#1, #2] = #3~\texttt{in}~#4~\texttt{end}}
 \newcommand{\unpack}{\texttt{unpack}}
 %\newcommand{\unpack}[4]{\texttt{unpack}[#1, #2] = #3~\texttt{in}~#4~\texttt{end}}
 \newcommand{\sref}[1]{\refraw(#1)}
@@ -159,8 +162,9 @@
 
 \newcommand{\letp}[3]{\texttt{letp}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
 
-\newcommand{\vdp}{\vd_P}
-\newcommand{\vdi}{\vd_I}
+\newcommand{\vdp}{\vd_{\kern-0.3em{p}}}
+\newcommand{\vdi}{\vd_{\kern-0.3em{I}}}
+%\newcommand{\vdi}{\vd_I}
 \newcommand{\splitsto}{\leadsto}
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\sd}[2]{\red{[}#1\mathrel{\red{,}}#2\red{]}}
@@ -228,5 +232,9 @@ SML \\
 \include{170328}
 
 \include{170330}
+
+\include{170404}
+
+\include{170406}
 
 \end{document}
