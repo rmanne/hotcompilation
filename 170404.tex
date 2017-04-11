@@ -1,0 +1,146 @@
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vdp M_1 \of \Pia{\alpha \of \sigma}{\sigma_2} \splitsto
+      \sd{c_1^{:\Pi\bind{\alpha \of k_1}{k_2}}}{
+        e_1^{:\forall\bind{\alpha \of k_1}{
+          \subst{\alpha}{\alpha_1}{\tau_1}
+            \arrow
+          \subst{\ap{c_1}{\alpha}}{\alpha_2}{\tau_2}
+        }}
+      } \\
+    \Gamma \vdp M_2 \of \sigma_1 \splitsto
+      \sd{c_1^{:k_1}}{e_1^{:\subst{c_2}{\alpha_1}{\tau_1}}} \\
+    \Gamma \vd \Fst{M_2} \gg c_2
+  }{
+    \Gamma \vdp \Ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma_2} \splitsto
+      \sd{\ap{c_1}{c_2}}{\ap{e_1[c_2]}{e_2}}
+  }
+
+  \inferrule{
+    \Gamma \vdp M_1 \of \sigma_1 \splitsto \sd{c_1}{e_1} \\
+    \Gamma, \alpha/s \of \sigma_1 \vdp M_2 \of \sigma_2 \splitsto
+      \sd{c_2}{e_2}
+  }{
+    \Gamma \vdp \pair{\alpha/s = M_1, M_2} \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}
+      \splitsto
+    \sd{\pair{c_1, \subst{c_1}{\alpha}{c_2}}}{
+      % NOTE the below is wrong because it is computing e_1 twice
+      %\pair{e_1,
+      %  \letbind{\alpha}{c_1}{
+      %    \letbind{s}{e_1}{
+      %      e_2
+      %    }
+      %  }
+      %}
+      \letbind{s}{e_1}{
+        \pair{s, \subst{c_1}{\alpha}{e_2}}
+      }
+    }
+  }
+
+  \inferrule{
+    \Gamma \vdp M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \splitsto
+      \sd{c}{e}
+  }{
+    \Gamma \vdp \pi_1 M \of \sigma_1 \splitsto
+      \sd{\pi_1 c}{\pi_1 e}
+  }
+
+  % CODING NOTE: we can omit the second premise here as well as above
+  \inferrule{
+    \Gamma \vdp M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \splitsto
+      \sd{c}{e} \\
+    \Gamma \vd \Fst{M} \gg c
+  }{
+    \Gamma \vdp \pi_2 M \of \subst{\pi_1 c}{\alpha}{\sigma_2} \splitsto
+      \sd{\pi_2 c}{\pi_2 e}
+  }
+
+  \inferrule{
+    \Gamma \vdp M_1 \of \sigma \splitsto \sd{c_1}{e_1} \\
+    \Gamma \vdp \Fst{M_1} \gg c_1 \\
+    \Gamma, \alpha/s \of \sigma_1 \vdp M_2 \of \sigma_2 \splitsto \sd{c_2}{e_2}
+  }{
+    \Gamma \vdp \letp{\alpha/s}{M_1}{M_2} \of \subst{c_1}{\alpha}{\sigma_2}
+      \splitsto \sd{\subst{c_1}{\alpha}{c_2}}{
+        \letbind{s}{e_1}{
+          \subst{c_1}{\alpha}{e_2}
+        }
+      }
+  }
+
+  \inferrule{
+    \Gamma  \vd \sigma_1 \of \sig \\
+    \Gamma, \alpha/s \of \sigma_1 \vdi M \of \sigma_2 \splitsto e \\
+    \sigma_1 \splitsto \sd{\alpha_1 \of k_1}{\tau_1}
+    \sigma_2 \splitsto \sd{\alpha_2 \of k_2}{\tau_2}
+  }{
+    \Gamma \vdp \lambdag{\alpha/s \of \sigma_1}{M} \of \Pig{\alpha \of \sigma_1}{\sigma_2}
+      \splitsto \sd{\ast}{
+        \Lambda\bind{\alpha \of k_1}{
+          \lambda\bind{s \of \subst{\alpha}{\alpha_1}{\tau_1}}{e}
+        }
+      }
+  }
+\end{mathpar}
+
+Lemma: \\
+$\Fst{\subst{c}{\alpha}{\sigma}} = \subst{c}{\alpha}{\Fst{\sigma}}$ \\
+Lemma: \\
+Suppose $\sigma \splitsto \sd{\alpha \of k}{\tau}$ \\
+then $\subst{c}{\beta}{\sigma} \splitsto
+        \sd{\alpha \of \subst{c}{\beta}{k}}{\subst{c}{\beta}{\tau}}$ \\
+
+% TODO: this should be WAY earlier
+\begin{mathpar}
+  % CODE NOTE: in our code, we simplify this further by just computing
+  % \Gamma \vd M_1 \of \sigma_1 since in our code, we compute the signatures
+  % alongside. Here, we do the harder way.
+  \inferrule{
+    \Gamma \vd \Fst{M_1} \gg c_1 \\
+    \Gamma, \alpha/s \vd \Fst{M_2} \gg c_2
+  }{
+    \Gamma \vd \Fst{\pair{\alpha/s = M_1, M_2}} \gg \pair{c_1, \subst{c_1}{\alpha}{c_2}}
+  }
+
+  \inferrule{
+    \Gamma \vd \Fst{M_1} \gg c_1 \\
+    \Gamma, \alpha/s \vd \Fst{M_2} \gg c_2
+  }{
+    \Gamma \vd \Fst{\letp{\alpha/s}{M_1}{M_2}} \gg \subst{c_1}{\alpha}{c_2}
+  }
+\end{mathpar}
+
+\subsection{$\Gamma \vdi M \of \sigma \splitsto e$}
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vdp M \of \sigma \splitsto \sd{c}{e} \\
+    \sigma \splitsto \sd{\alpha \of k}{e}
+  }{
+    \Gamma \vdi M \of \sigma \splitsto
+      \packbind{c}{e}{\exists\bind{\alpha \of k}{\tau}}
+  }
+
+  \inferrule{
+    % NOTE: this should really be vdi, but the idea is that we can just unpack
+    % to make that happen anyways (see next rule)
+    \Gamma \vdp M_1 \of \Pig{\alpha \of \sigma_1}{\sigma_2} \splitsto
+      \sd{c_1}{e_1} \\
+    \Gamma \vdp M_2 \of \sigma_1 \splitsto \sd{c_2}{e_2} \\
+    \Gamma \vd \Fst{M_2} \gg c_2
+  }{
+    \Gamma \vdi \ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma_2} \splitsto
+      \ap{e_1[c_2]}{e_2}
+  }
+
+  \inferrule{
+    \Gamma \vdi M_1 \of \Pig{\alpha \of \sigma_1}{\sigma_2} \splitsto e \\
+    \Gamma \vdp M_2 \of \sigma_1 \splitsto \sd{c_2}{e_2} \\
+    \Gamma \vd \Fst{M_2} \gg c_2
+  }{
+    \Gamma \vdi \ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma_2} \splitsto
+      \unpackbind{\beta}{f}{e}{
+        \ap{f[c_2]}{e_2}
+      }
+  }
+\end{mathpar}

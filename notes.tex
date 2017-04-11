@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 
 %\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{latexsym}
 \usepackage{proof}
@@ -162,13 +163,18 @@
 
 \newcommand{\letp}[3]{\texttt{letp}~#1 \mathrel{=} #2~\texttt{in}~#3~\texttt{end}}
 
-\newcommand{\vdp}{\vd_{\kern-0.3em{p}}}
-\newcommand{\vdi}{\vd_{\kern-0.3em{I}}}
+\newcommand{\vdp}{\vd_{\kern-0.4em{\textsc{p}}}}
+\newcommand{\vdi}{\vd_{\kern-0.4em{\textsc{i}}}}
+\newcommand{\vdk}{\vd_{\kern-0.3em{\kappa}}}
 %\newcommand{\vdi}{\vd_I}
 \newcommand{\splitsto}{\leadsto}
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\sd}[2]{\red{[}#1\mathrel{\red{,}}#2\red{]}}
 \newcommand{\axiom}[1]{\inferrule{#1}{\strut}}
+
+% TODO ap Ap
+\newcommand{\lam}[2]{{\lambda\bind{#1}{#2}}}
+\newcommand{\Lam}[2]{{\Lambda\bind{#1}{#2}}}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -236,5 +242,7 @@ SML \\
 \include{170404}
 
 \include{170406}
+
+\include{170411}
 
 \end{document}

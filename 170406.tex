@@ -1,0 +1,122 @@
+\begin{mathpar}
+% NOTE: the \sigma on the bottom is different from the
+% \sigma on the top (bottom is subbed by the inhabitant)
+% CODING NOTE: we leave out the x in OUR code
+% TODO: the below are typing rules
+%\inferrule{
+%  \Gamma \vd e \of \tau \\
+%  \Gamma, x \of \tau \vd_\kappa M \of \sigma
+%}{
+%  \Gamma_\kappa \vd \letbind{x}{e}{M \of \sigma}
+%}
+%
+%\inferrule{
+%  \Gamma, x \vd \Fst{M} \gg c
+%}{
+%  \Gamma \vd \Fst{\letbind{x}{e}{M}} \gg c
+%}
+
+\inferrule{
+  \Gamma \vd e \of \tau \splitsto \target{e} \\
+  \Gamma, x \of \tau \vd_\kappa M \of \sigma \splitsto \sd{c}{e'}
+}{
+  \Gamma \vdp \letbind{x}{e}{M \of \sigma} \splitsto
+    \sd{c}{\letbind{x}{\target{e}}{e'}}
+}
+
+\inferrule{
+  \Gamma \vdi M_1 \of \Pia{\alpha \of \sigma_1}{\sigma_2} \splitsto e_1 \\
+  \Gamma \vdp M_2 \of \sigma_2 \splitsto \sd{c_2}{e_2} \\
+  \Gamma \vd \Fst{M_2} \gg c_2 \\
+  \sigma_2 \splitsto \sd{\alpha_2 \of k_2}{\tau_2}
+}{
+  \Gamma \vdi \Ap{M_1}{M_2} \of \subst{c_2}{\alpha}{\sigma_2} \splitsto
+    \unpackbind{\beta}{f}{e_1}{
+      \packbind{\ap{\beta}{c_2}}{
+        \ap{f[c_2]}{e_2}
+      }{\exists\bind{\alpha_2 \of \subst{c_2}{\alpha}{k_2}}{\subst{c_2}{\alpha}{\tau_2}}}
+    }
+}
+
+\inferrule{
+  \Gamma \vdi M_1 \of \sigma_1 \splitsto e_1 \\
+  \Gamma, \alpha/s \of \sigma_1 \vdi M_2 \of \sigma_2 \splitsto e_2 \\
+  \sigma_2 \splitsto \sd{\alpha_2 \of k_2}{\tau_2}
+}{
+  \Gamma \vdi \pair{\alpha/s = M_1, M_2} \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}
+    \splitsto \\
+    \unpackbind{\alpha}{s}{e_1}{
+      \unpackbind{\alpha_2}{s_2}{e_2}{
+        \packbind{\pair{\alpha, \alpha_2}}{
+          \pair{s, s_2}
+        }{
+          \exists\bind{\beta \of \Sigma\bind{\alpha \of k_1}{k_2}}{
+            \subst{\pi_1 \beta}{\alpha_1}{\tau_1}
+              \times
+            \subst{\pi_1 \beta, \pi_2 \beta}{\alpha, \alpha_2}{\tau_2}
+          }
+        }
+      }
+    }
+}
+
+\inferrule{
+  \Gamma \vdi M \of \sigma \splitsto e
+}{
+  \Gamma \vdi \seal{M}{\sigma} \of \sigma \splitsto e
+}
+
+\inferrule{
+  \Gamma \vdi M_1 \of \sigma_1 \splitsto e_1 \\
+  \Gamma, \alpha/s \of \vdi M_2 \of \sigma_2 \splitsto e_2
+}{
+  \Gamma \vdi \letbind{\alpha/s}{M_1}{M_2 \of \sigma_2} \of \sigma_2 \splitsto
+    \unpackbind{\alpha}{s}{e_1}{e_2}
+}
+
+\inferrule{
+  \Gamma \vdp M_1 \of \sigma_2 \splitsto \sd{c_1}{e_1} \\
+  \Gamma, \alpha/s \of \sigma_1 \vdi M_2 \of \sigma_2 \splitsto e_2 \\
+  \Gamma \vd \Fst{M_1} \gg c_1
+}{
+  \Gamma \vdi \letp{\alpha/s}{M_1}{M_2} \of \sigma \splitsto
+    \letbind{s}{e_1}{\subst{c_1}{\alpha}{e_2}}
+}
+
+\inferrule{
+  \Gamma \vd e \of \tau \tto \target{e'} \\
+  \Gamma, x \of \tau \vdi M \of \sigma \splitsto e'
+}{
+  \Gamma \vdi \letbind{x}{e}{M} \of \sigma \splitsto \letbind{x}{\target{e}}{e'}
+}
+\end{mathpar}
+
+% OPTIMIZATION 1: For impure pieces, 4 cases, one where both are pure, one
+% where both are impure, and 2 for the mix
+%
+% OPTIMIZATION 2: Turn things into a tuple, from
+% (t1, (t2, ...)) -> \times[t1, t2, ...]
+%
+% OPTIMIZATION 3: lots of signatures split to just \sd{\alpha \of k}{\unit}
+% Don't add that unit to the big tuple at the very end
+
+\begin{mathpar}
+  % Extentionality/Retyping rules
+  \inferrule{
+    \Gamma \vd M \of \satom{k'} \splitsto \sd{c^{\of k'}}{e^{\of \unit}} \\
+    \Gamma \vd \Fst{M} \gg c \\
+    \Gamma \vd c \of k
+  }{
+    \Gamma \vd M \of \satom{k} \splitsto \sd{c}{e}
+  }
+
+  \inferrule{
+    \Gamma \vdp M \of \Pia{\alpha \of \sigma_1}{\sigma_2'} \\
+    \Gamma, \alpha/s \of \sigma_1 \vd \Ap{M}{s} \of \sigma_2 \splitsto \sd{c}{e}
+  }{
+    \Gamma \vdp M \of \Pia{\alpha \of \sigma_1}{\sigma_2} \splitsto
+      \sd{\lambda\bind{\alpha \of k_1}{c}}{
+        \Lambda\bind{\alpha \of k_1}{\lambda\bind{s \of \subst{\alpha}{\alpha_1}{\tau_1}}{e}}
+      }
+  }
+\end{mathpar}

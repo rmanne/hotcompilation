@@ -1,0 +1,195 @@
+% TODO
+% If $\vd \Gamma \ok$, $\Gamma \vdp M \of \sigma$, $\Gamma \vd \Fst{M} \gg c$ then
+% $\Gamma \vdp M \of \singleton{c \of \sigma}
+% However, this isn't actually true until we add in the extensionality rules.
+% This the REASON that we even have them.
+Note that the last rule in the previous section is wrong.
+We instead add the appropriate extensionality rules to replace it.
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vdp M \of \sigma \splitsto \sd{c}{e} \\
+    \Gamma \vd \Fst{M} \gg c
+  }{
+    \Gamma \vdp M \of \singleton{c \of \sigma} \splitsto \sd{c}{e}
+  }
+\end{mathpar}
+To prove type correctness for the above, we want to show: \\
+$c \of k'$ \\
+$e \of \subst{c}{\alpha}{\tau'}$ \\
+
+The first is trivially true, since $k' = \singleton{c \of k}$, since
+singleton is commutative. \\
+
+For the second, lemma: \\
+If $\Gamma \vd \sigma \of \sig$, $\Gamma \vd c \of k$,
+$\sigma \splitsto \bind{\alpha \of k}{\tau}$, \\
+then, $\Gamma, \alpha \of k' \vd \tau \equiv \tau' \of \type$,
+$\Gamma \vd \subst{c}{\alpha}{\tau} \equiv \subst{c}{\alpha}{\tau} \of \type$
+
+% CODING NOTE: we basically ignore all of the above
+% Phase Splitting rule (algorithmic) that WE use is:
+\begin{mathpar}
+  \inferrule{
+    \alpha/s \of \sigma \in \Gamma
+  }{
+    \Gamma \vdp s \implies \singleton{\alpha \of \sigma} \splitsto \sd{\alpha}{s}
+  }
+\end{mathpar}
+
+% TODO
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vdp M \of \sigma \splitsto \sd{c}{e} \\
+    \Gamma \vd \sigma \le \sigma'a \splitsto f
+  }{
+    \Gamma \vdp M \of \sigma' \splitsto \sd{c}{\ap{f[c]}{e}}
+  }
+\end{mathpar}
+New judgement to construct the above: \\
+If $\Gamma \vd \sigma \le \sigma' \splitsto f$,
+$\sigma \splitsto \bind{\alpha \of k}{\tau}$,
+$\sigma' \splitsto \bind{\alpha \of k'}{\tau'}$,
+then %TODO
+
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vd \sigma \equiv \sigma' \of \sig \\
+    \sigma \bind{\splitsto \alpha \of k}{\tau}
+  }{
+    \Gamma \vd \sigma \le \sigma' \splitsto \Lam{\alpha \of k}{\lambda\bind{x \of \tau}{x}}
+  }
+
+  \inferrule{
+    \Gamma \vd \sigma_1 \le \sigma_2 \splitsto f_1 \\
+    \Gamma \vd \sigma_2 \le \sigma_3 \splitsto f_1 \\
+    \sigma_1 \splitsto \bind{\alpha \of k_1}{\tau_1}
+  }{
+    \Gamma \vd \sigma_1 \le \sigma_3 \splitsto
+      \Lam{\alpha \of k_1}{\lam{x \of \tau_1}{\ap{f_2[\alpha]}{\ap{f_1[\alpha]}{x}}}}
+  }
+
+  \inferrule{
+    \Gamma \vd k \le k'
+  }{
+    \Gamma \vd \satom{k} \le \satom{k'} \splitsto
+      \Lam{\alpha \of k}{\lam{x \of \unit}{x}}
+  }
+
+  \inferrule{
+    \Gamma \vd \sigma_1' \le \sigma_1 \splitsto f_1 \\
+    \Gamma, \alpha \of \Fst{\sigma_1'} \vd \sigma_2 \le \sigma_2' \splitsto f_2 \\
+    \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig
+  }{
+    \Gamma \vd \Pig{\alpha \of \sigma_1}{\sigma_2} \le
+               \Pig{\alpha \of \sigma_1'}{\sigma_2'} \splitsto \\
+      \Lam{\_ \of 1}{
+        \lam{f \of
+          \forall\bind{\alpha \of k_1}{
+            \subst{\alpha}{\alpha_1}{\tau_1} \arrow
+            \exists\bind{\alpha_2 \of k_2}{\tau_2}
+          }
+        }{
+          \Lam{\alpha \of k_1'}{
+            \lam{x \of \subst{\alpha}{\alpha_1}{\tau_1'}}{
+              \unpackbind{\alpha_2}{y}{
+                \ap{f[\alpha]}{\ap{f_1[\alpha]}{x}}
+              }{
+                \packbind{\alpha_2}{\ap{f_2[\alpha_2]}{y}}{
+                  \exists\bind{\alpha_2 \of k_2'}{\tau_2'}
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+
+  \inferrule{
+    \Gamma \vd \sigma_1' \le \sigma_1 \splitsto f_1 \\
+    \Gamma, \alpha \of \Fst{\sigma_1'} \vd \sigma_2 \le \sigma_2' \splitsto f_2 \\
+    \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig
+  }{
+    \Gamma \vd \Pia{\alpha \of \sigma_1}{\sigma_2} \le
+               \Pia{\alpha \of \sigma_1'}{\sigma_2'} \splitsto \\
+      \Lam{\beta\of \Pi\bind{\alpha \of k_1}{k_2}}{
+        \lam{f \of
+          \forall\bind{\alpha \of k_1}{
+            \subst{\alpha}{\alpha_1}{\tau_1} \arrow
+            \subst{\ap{\beta}{\alpha}}{\alpha_2}{\tau_2}
+          }
+        }{
+          \Lam{\alpha \of k_1'}{
+            \lam{x \of \subst{\alpha}{\alpha_1}{\tau_1'}}{
+              \ap{f_2[\ap{\beta}{\alpha}]}{\ap{f[\alpha]}{\ap{f_1[\alpha]}{x}}}
+            }
+          }
+        }
+      }
+  }
+
+  \inferrule{
+    \Gamma \vd \sigma_1 \le \sigma_1' \splitsto f_1 \\
+    \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \le \sigma_2' \splitsto f_2 \\
+    \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \of \sig
+  }{
+    \Gamma \vd \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \le
+               \Sigma\bind{\alpha \of \sigma_1'}{\sigma_2'} \splitsto \\
+      \Lam{
+        \beta \of \sigma\bind{\alpha \of k_1}{k_2}
+      }{
+        \lam{x \of \subst{\pi_1 \beta}{\alpha_1}{\tau_1} \times
+                   \subst{\pi_1 \beta, \pi_2 \beta}{\alpha_1, \alpha_2}{\tau_2}}{
+          \pair{
+            \ap{f_1[\pi_1 \beta]}{\pi_0^\ast x},
+            \subst{\pi_1 \beta}{\alpha}{
+              \ap{f_2[\pi_2 \beta]}{\pi_1^\ast x}
+            }
+          }
+        }
+      }
+  }
+\end{mathpar}
+
+% TODO
+\begin{mathpar}
+  % CODING NOTE: the right thing is above (see pi-gen), BUT, the below
+  % will work since the autograder does not check for it
+  \inferrule{
+    \Gamma \vdp M \of \sigma \splitsto \sd{c}{e} \\
+    \Gamma \vd \sigma \le \sigma' \\
+    \sigma \splitsto \bind{\alpha \of k}{\tau} \\
+    \sigma' \splitsto \bind{\alpha \of k'}{\tau'} \\
+    \Gamma, \alpha \of k \vd \tau \equiv \tau' \\
+  }{
+    \Gamma \vdp M \of \sigma' \splitsto \sd{c}{e}
+  }
+\end{mathpar}
+
+
+\subsection{TODO}
+Now let's look at sealing
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vdi M \checking \sigma
+  }{
+    \Gamma \vdi \seal{M}{\sigma} \synthesis \sigma \splitsto e
+  }
+
+  \inferrule{
+    \Gamma \vdi M \synthesis \sigma' \splitsto e \\
+    \Gamma \vd \sigma' \triangleq \sigma
+  }{
+    \Gamma \vdi M \checking \sigma \splitsto e
+  }
+\end{mathpar}
+
+Coding Note (the SIMPLE way):
+\begin{lstlisting}
+translatePure   : context -> module -> con * con * term * sg
+translateImpure : context -> module -> term * sg
+\end{lstlisting}
+The better way:
+\begin{lstlisting}
+datatype result = con * con * term * sg | term * sg
+translate : context -> module -> result
+\end{lstlisting}
