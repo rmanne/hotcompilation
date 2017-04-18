@@ -1,0 +1,96 @@
+\subsection{Cheney-Scan}
+Stop-the-world semispace copy-and-collect garbage collector that we will be
+implementing. \\
+
+\subsubsection{Heap Traversal}
+white = unvisited \\
+black = visited \\
+gray = partially visited \\
+
+Initially, gray the root. Then, color all of the nodes reachable from the root
+also gray, and once we do, color the root black. \\
+Gray nodes are ones that are copied to the to space. \\
+Black nodes are ones whose members are also copied to the to space. \\
+Be careful when you need to gray a node that is already grayed. (eg: just
+update the pointer etc.) \\
+Done with collection when have nothing but black and white nodes. \\
+Note:
+Cheney-Scan happens to be BFS, but DFS may actually provide better locality. \\
+
+Tri-color Invariant:
+\begin{itemize}
+  \item no edges from black to white
+  \item any reachable white object is reachable from a gray object
+\end{itemize}
+
+\subsubsection{Implementation}
+AP ``Allocation Pointer'' \\
+LP ``Limit Pointer'' \\
+
+When mutator asks for n words, increment AP by (n + 1), first one being the
+H ``Header'', and then the n allocated words after it. \\
+Before the incrementing, check if ap + (n + 1) $>$ lp, and if so, gc. \\
+
+On gc, set AP and LP to the ends of the to-space. \\
+Then, copy over roots. \\
+Then, copy over nodes connected to those roots. \\
+Then, copy over nodes connected to those nodes, etc. \\
+Define gray nodes to be all nodes between TP and AP, where TP ``Trace Pointer''
+is maintained appropriately, and is incremented as we black away a node. \\
+Define black nodes to be all nodes between start of to space and TP. \\
+
+
+\section{Elaboration}
+\begin{enumerate}
+  \item \sout{Syntatic} Semantic Sugar
+  \item Nonsense
+    \begin{itemize}
+      \item open
+      \item include
+    \end{itemize}
+
+  % things that make sense, but we don't have a good representation for them yet
+  \item no \underline{good} type theory yet
+    \begin{itemize}
+      \item avoidance problem
+      \item pattern matching
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Target Language}
+\begin{flalign*}
+  exp &\bnfdef &\\
+  dec &\bnfdef &\\
+  ty  &\bnfdef &\\
+  pat &\bnfdef &\\
+  match &\bnfdef &\\
+  mod &\bnfdef &\\ % contain decs
+  sig &\bnfdef &\\
+  spec &\bnfdef &\\ % in between mods and sigs
+  id  &\bnfdef &\\
+  % sml doesn't have variables, it only have identifiers (can be variables,
+  % but can also be module names etc)
+\end{flalign*}
+
+Identifier Resolution is an important topic (where did the `x' come from).
+
+\subsection{Judgement}
+% This gamma is the il-module context
+% Mec and \sigmaec are also IL-module pieces
+% the exp is EL
+% e and tau are also IL-Module pieces
+If $\Gamma \vd M_{ec} \of \sigma_{ec} \rtri exp \leadsto e \of \tau$
+and $\vd \Gamma \ok$, $\Gamma \vd M_{ec} \of \sigma_{ec}$,
+then $\Gamma \vd e \of \tau$ \\
+$\Gamma \vd M_{ec} \of \sigma_{ec} \rtri id \leadsto e \of M \of \sigma$ \\
+
+Also, extend IL-Module with names (and certain ``namespaces''). \\
+\begin{flalign*}
+  \sigma &\bnfdef \dots \bnfalt \name \of \sigma &\\
+  \name  &\bnfdef \texttt{VAL } id \bnfalt \texttt{CON } id
+          \bnfalt \texttt{MOD } id \bnfalt \texttt{FUN } id \bnfalt \dots &\\
+\end{flalign*}
+
+eg:
+$M \of \Sigma\bind{\alpha \of \sigma_1}{\VAL{foo} \of \sigma_2} \rtri \VAL{foo}
+  \leadsto \outn{\pi_2 M}$

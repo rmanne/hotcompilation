@@ -1,0 +1,163 @@
+% TODO: now names
+\subsection{Named Signatures}
+\subsubsection{Target Language}
+\begin{flalign*}
+\name &\bnfdef \dots &\\
+\sigma &\bnfdef \dots \bnfalt \name \of \sigma &\\
+\end{flalign*}
+
+$\Fst{\name \of \sigma} = \Fst{\sigma}$ \\
+$\singleton{c \of \name \of \sigma} = \name \of \singleton{c \of \sigma}$ \\
+
+\subsubsection{Typing Judgements}
+\begin{mathpar}
+\inferrule{
+  \Gamma \vd \sigma \of \sig
+}{
+  \Gamma \vd \name \of \sigma \of \sig
+}
+
+\inferrule{
+  \Gamma \vdk M \of \sigma
+}{
+  \Gamma \vdk \inn{\name}{M} \of (\name \of \sigma)
+}
+
+\inferrule{
+  \Gamma \vdk M \of (\name \of \sigma)
+}{
+  \Gamma \vdk \outn{M} \of \sigma
+}
+
+\inferrule{
+  \Gamma \vd \Fst{M} \gg c
+}{
+  \Gamma \vd \Fst{\inn{\name}{M}} \gg c \\
+  \Gamma \vd \Fst{\outn{M}} \gg c
+}
+
+\inferrule{
+  \Gamma \vdp M \of \name \of \sigma' \\
+  \Gamma \vdp \outn{M} \of \sigma
+}{
+  \Gamma \vdp M \of \name \of \sigma
+}
+
+\inferrule{
+  \Gamma \vdk M \synthesis \sigma
+}{
+  \Gamma \vdk \inn{M} \of \name \of \sigma
+}
+
+\inferrule{
+  \Gamma \vdk M \synthesis \name \of \sigma
+}{
+  \Gamma \vdk \outn{M} \synthesis \sigma
+}
+
+\inferrule{
+  \sigma \splitsto \sd{\alpha \of k}{\tau}
+}{
+  \name \of \sigma \splitsto \sd{\alpha \of k}{\tau}
+}
+\end{mathpar}
+
+% TODO: coding notes for yesterday to simplify our life
+\begin{mathpar}
+\inferrule{
+  \Gamma \vdp M \synthesis \sigma' \splitsto \sd{c}{e} \\
+  \cancel{\Gamma \vd \sigma' \unlhd \sigma} \\ % cancel because already well-formed
+  \cancel{\sigma \splitsto \target{\bind{\alpha \of k}{\tau}}} \\
+  \cancel{\sigma' \splitsto \target{\bind{\alpha \of k'}{\tau'}}} \\
+  \cancel{\Gamma, \alpha \of k' \vd \tau \equiv \tau' \of \type} \\
+  \Gamma \vd \sigma' \leqq \sigma
+}{
+  \Gamma \vdp M \synthesis \sigma \splitsto \sd{c}{e}
+}
+\end{mathpar}
+
+And now we need to add in the appropriate rules \\
+\subsubsection{$\Gamma \vd \sigma \leqq \sigma'$}
+\begin{mathpar}
+\axiom{\Gamma \vd 1 \leqq 1}
+
+\axiom{\Gamma \vd \satom{k} \leqq \satom{k'}}
+
+% For this one, we cancel {\Gamma \tau \leqq \tau' \of \type}
+\axiom{\Gamma \vd \datom{\tau} \leqq \datom{\tau}}
+
+\inferrule{
+  \Gamma \vd \sigma_1 \leqq \sigma_1' \\
+  \Gamma, \alpha \of \Fst{\sigma_1} \vd \sigma_2 \leqq \sigma_2' \\
+}{
+  \Gamma \vd \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \leqq
+             \Sigma\bind{\alpha \of \sigma_1'}{\sigma_2'}
+}
+
+\inferrule{
+  \Gamma \vd \Pig{\alpha \of \sigma_1}{\sigma_2} \equiv
+             \Pig{\alpha \of \sigma_1'}{\sigma_2'}
+}{
+  \Gamma \vd \Pig{\alpha \of \sigma_1}{\sigma_2} \leqq
+             \Pig{\alpha \of \sigma_1'}{\sigma_2'}
+}
+\end{mathpar}
+
+
+% New topic
+\section{GC}
+\begin{enumerate}
+\item Mark and Sweep
+\item Copying
+\item Reference Counting
+\end{enumerate}
+
+For the first two, the idea is that we have pointers to objects in the heap
+called the "roots". These objects have pointers to other objects. Accessible
+objects are objects we can encounter by following some set of pointers from
+the roots. Goal is to keep accessible objects and get rid of the rest. \\
+
+Reference counting cannot deal with circular pointers. So we don't even
+want to talk about it really. \\
+
+Copying has the best asymptotic time (only traverse accessible objects). \\
+Mark is just as good, but the sweep phase is too expensive (the whole heap). \\
+Spacial locality is a huge benefit of copying (because defragmentation). \\
+Copying sacrifices about half of the heap space. \\
+Copying also has trouble with ``mutation'' (we will talk about this later). \\
+Mark-sweep supports pinning (eg: C\#) (for external devices that cannot deal
+with copying). \\
+
+\subsection{Copying}
+Stop-the-World/Incremental/Concurrent \\
+Stop-the-World is easiest, and other than its undesirably behavior, it has
+no potential memory-leak problems. \\
+
+Semispace/Generational \\
+EG: 2-generation generational copying collector \\
+Make 3 segments, "Minor", "Major", and "2-Space" \\
+Algo: we allocate in minor until we run out; collect into the major space \\
+The reason this works is because objects in the major heap cannot point
+to objects in the minor heap in the absence of mutation, which we have in
+our functional languages. \\
+Once we run out of memory in the major space, we collect it into the 2-space,
+which then becomes the major space, while the old major space becomes the
+2-space. \\
+Note that the Major-collection is certainly more expensive. \\
+
+This has a major limitation when we DO have mutation. We lose most of the
+performance if we have to traverse everything in the end. \\
+Thus, to fix this, we maintain a reference table where we maintain pointers
+to everything we assign. Everytime we make the assignment, we will need to
+update this table. Each generation other than the first gets its own
+reference table. \\
+
+Another problem: Pointer identification \\
+``Conservative'', assume it's a pointer and trace, unless it's definitely not,
+but this does not work at all with copying (because value must change). \\
+``Tag bit'', tag each object with a value that decides whether or not the
+value is a pointer. Downside: size of int now becomes 31 instead of 32. \\
+``Tag word'', header word has bitmask that tells what values are pointers. \\
+``Tag free'', use the types to check whether or not something is traceable. \\
+
+with ``tag bit'', But then how do we get Int32? ``boxing'' (pass-by-reference)

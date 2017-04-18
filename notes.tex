@@ -11,10 +11,12 @@
 \usepackage{xifthen}
 \usepackage{cancel}
 \usepackage{tikz}
+\usepackage[normalem]{ulem}
 
 \usepackage{titlesec}
 \titleformat*{\section}{\large\bfseries}
 \titleformat*{\subsection}{\bfseries}
+\titleformat*{\subsubsection}{}
 %\renewcommand{\thesetion}{\arabic{section}}
 %\renewcommand{\thesubsection}{(\alpha{subsection})}
 
@@ -176,6 +178,12 @@
 \newcommand{\lam}[2]{{\lambda\bind{#1}{#2}}}
 \newcommand{\Lam}[2]{{\Lambda\bind{#1}{#2}}}
 
+\newcommand{\name}{\texttt{name}}
+\newcommand{\inn}[2]{\texttt{in}_{#1}~#2}
+\newcommand{\outn}[1]{\texttt{out}~#1}
+\newcommand{\rtri}{\vartriangleright}
+\newcommand{\VAL}[1]{\texttt{VAL}~#1}
+
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
 {\tt rmanne}@andrew.cmu.edu}
@@ -244,5 +252,9 @@ SML \\
 \include{170406}
 
 \include{170411}
+
+\include{170413}
+
+\include{170418}
 
 \end{document}
