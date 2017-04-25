@@ -65,6 +65,8 @@
 \newcommand{\subst}[3]{[#1/#2]#3}
 
 \newcommand{\oversetr}[2]{\overset{#2}{#1}}
+\newcommand{\plus}[1]{\overset{+}{#1}}
+\newcommand{\minus}[1]{\overset{-}{#1}}
 
 \newcommand{\ace}{\Leftrightarrow} % Algorithmic Constructor Equivalence
 \newcommand{\ape}{\leftrightarrow} % Algorithmic Path Equivalence
@@ -98,6 +100,7 @@
 \DeclareMathOperator{\ok}{ok}
 \DeclareMathOperator{\fv}{FV}
 \DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\longid}{longid}
 %\newcommand{\type}{\texttt{T}
 \DeclareMathOperator{\type}{T}
 %\DeclareMathOperator{\type}{Type}
@@ -179,10 +182,26 @@
 \newcommand{\Lam}[2]{{\Lambda\bind{#1}{#2}}}
 
 \newcommand{\name}{\texttt{name}}
+\newcommand{\ns}{\texttt{ns}}
+\newcommand{\ty}{\texttt{ty}}
+\newcommand{\expn}{\texttt{exp}}
+\newcommand{\openn}{\texttt{open}}
+\newcommand{\typen}{\texttt{type}}
+\newcommand{\spec}{\texttt{spec}}
+\newcommand{\dec}{\texttt{dec}}
+\newcommand{\ec}{\texttt{ec}}
+\newcommand{\fn}[2]{\texttt{fn}~#1~\Rightarrow~#2}
 \newcommand{\inn}[2]{\texttt{in}_{#1}~#2}
 \newcommand{\outn}[1]{\texttt{out}~#1}
+\newcommand{\sraise}[1]{\texttt{raise}~#1}
 \newcommand{\rtri}{\vartriangleright}
 \newcommand{\VAL}[1]{\texttt{VAL}~#1}
+\newcommand{\CON}[1]{\texttt{CON}~#1}
+\newcommand{\MOD}[1]{\texttt{MOD}~#1}
+\newcommand{\FUN}[1]{\texttt{FUN}~#1}
+\newcommand{\HIDE}{\texttt{HIDE}}
+\newcommand{\structure}[1]{\texttt{structure}~#1}
+\newcommand{\struct}[1]{\texttt{structure}~#1~\texttt{end}}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -256,5 +275,7 @@ SML \\
 \include{170413}
 
 \include{170418}
+
+\include{170425}
 
 \end{document}

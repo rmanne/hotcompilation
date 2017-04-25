@@ -1,0 +1,209 @@
+\subsection{$\Gamma \vd M_{ec} \of \sigma_{ec} \rtri \name \tto M \of \sigma$}
+$\plus\Gamma \vd \plus{M_{ec}} \of \plus\sigma_{ec} \rtri \plus\name \tto \minus{M} \of \minus\sigma$ \\
+% CODING NOTE: it may be convenient to compute the fst
+
+\begin{mathpar}
+  \inferrule{
+  }{
+    \Gamma \vd M \of (\name \of \sigma) \rtri \name \tto \outn{M} \of \sigma
+  }
+
+  % CODING NOTE: the whole context is pure so that we can lookup the fsts
+  \inferrule{
+    \Gamma \vd \Fst{M} \gg c \\
+    \Gamma \vd \pi_2 M \of \subst{\pi_1 c}{\alpha}{\sigma_2} \rtri \name \tto
+      M' \of \sigma
+  }{
+    \Gamma \vd M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \rtri \name \tto
+      M' \of \sigma
+  }
+
+  \inferrule{
+    \Gamma \vd \Fst{M} \gg c \\
+    \Gamma \vd \pi_2 M \of \subst{\pi_1 c}{\alpha}{\sigma_2} \rtri \name \ \cancel{\tto} \\
+    \Gamma \vd \pi_1 M \of \sigma_1 \vd \name \tto M' \of \sigma
+  }{
+    \Gamma \vd M \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \rtri \name \tto
+      M' \of \sigma
+  }
+
+  % if we can't find it in the above, we cannot find it anywhere else and the
+  % rest will result not found.
+  % ``raise UnboundIdentifier'' at the top level.
+\end{mathpar}
+
+\subsection{$\Gamma \vd M_\ec \of \sigma_\ec \rtri \longid @ \ns \tto M \of \sigma$}
+\begin{flalign*}
+  \longid \bnfdef \id \bnfalt \id.\longid \\
+  \name \bnfdef \VAL\id \bnfalt \CON\id \bnfalt \MOD\id \bnfalt \FUN\id \\
+  \ns \bnfdef \VAL{} \bnfalt \CON{} \bnfalt \MOD{} \bnfalt \FUN{}
+\end{flalign*}
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vd M \of \sigma \rtri \MOD{\id} \tto M' \of \sigma' \\
+    \Gamma \vd M' \of \sigma' \rtri \longid @ \ns \tto M'' \of \sigma'' \\
+  }{
+    \Gamma \vd M \of \sigma \rtri \id.\longid @ \ns \tto M'' \of \sigma''
+  }
+
+  \inferrule{
+    \Gamma \vd M \of \sigma \rtri \ns \id \tto M' \of \sigma'
+  }{
+    \Gamma \vd M \of \sigma \rtri \id @ \ns \tto M' \of \sigma'
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \longid @ \VAL{} \tto M \of \datom{\tau}
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri_{\expn} \longid \tto \Ext{M} \of \tau
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ty \tto \tau \\
+    \Gamma, x \of \tau \vd \pair{M_\ec, \inn{\VAL{\id}}{\datom{x}}} \of
+      \sigma_\ec \times (\VAL{\id} \of \datom{\tau}) \rtri \expn
+      \tto e \of \tau'
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \fn{\id \of \ty}{\expn} \tto
+      \lambda\bind{x \of \tau}{e} \of \tau \arrow \tau'
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \expn_1 \tto e_1 \of \tau_1 \\
+    \Gamma \vd \tau_1 \whr \tau \vd \tau' \\
+    \Gamma \vd M_\ec \of \sigma_\ec \tto e_2 \of \tau_2 \\
+    \Gamma \vd \tau_2 \equiv \tau \of \type
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ap{\expn_1}{\expn_2} \tto
+      \ap{e_1}{e_2} \of \tau'
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ty \tto \tau \\
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \exp \tto e \of \tau' \\
+    \Gamma \vd \tau' \equiv \exn \of \tau
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri (\sraise{\expn}) \of \ty
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \longid @ \CON{} \tto M \of \satom{k} \\
+    \Gamma \vd k \le \tau \\
+    \Gamma \vd \Fst{M} \gg c
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri_\ty \longid \tto c
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ty_i \tto \tau_i
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ty_1 \arrow \ty_2 \tto \tau_1 \arrow \tau_2
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \dec \tto M \of \sigma \\
+    \Gamma, \alpha/s \of \sigma \vd \pair{M_\ec, s} \of
+      \sigma_\ec \times \singleton{\alpha \of \sigma} % (selfify)
+      \rtri \exp
+      \tto e \of \tau \\
+    \Gamma, \alpha \of \Fst{\sigma} \vd \tau \equiv \tau' \of \type \\ % (inhabitant)
+    \Gamma \vd \tau' \of \type
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \letbinds{\dec}{\exp} \tto
+      \letbind{\alpha/s}{M}{e}
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \exp \tto e \of \tau
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \VAL{\id} \mathop{=} \exp \tto
+      \inn{\VAL{\id}}{\datom{e}} \of (\VAL{\id} \of \datom{\tau})
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \longid @ \MOD{} \tto M \of \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \openn~\longid \tto M \of \sigma
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \dec_1 \tto M_1 \of \sigma_1 \\
+    \Gamma, \alpha/s \of \sigma_1 \vd \pair{M_\ec,s}
+      \of \sigma_\ec \times \singleton{\alpha \of \sigma_1} \rtri \dec_2
+      \tto M_2 \of \sigma_2 \\
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \dec_1~\dec_2 \tto
+      \pair{\alpha/s = M_1, M_2} \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \mod \rtri M \of \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \structure{\id \mathbin{=} \mod} \tto
+      \inn{\MOD{\id}}{M} \of (\MOD{\id} \of \sigma)
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \longid @ \MOD{} \tto M \of \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri_{\MOD{}} \longid \tto M \of \sigma
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \dec \rtri M \of \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \struct{\dec} \tto M \of \sigma
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \spec_1 \tto \sigma_1
+    \\ \dots \\
+    \Gamma, \alpha_1/\sigma_1 \of \sigma_1, \dots,
+            \alpha_{n - 1}/\sigma_{n - 1} \of \sigma_{n - 1} \vd
+      \pair{\pair{M_\ec, s_1}, \dots, s_{n - 1}}
+      \of \sigma_\ec \times \singleton{\alpha_1 \of \sigma_1} \times \dots
+        \times \singleton{\alpha_{n - 1} \of \sigma_{n - 1}}
+      \rtri \spec_n \tto \sigma_n
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \sig~\spec_1 \dots \spec_n~\texttt{end} \tto
+      \Sigma\bind{\alpha_1 \of \sigma_1}{\dots \Sigma\bind{\alpha_n \of \sigma_n}{1}}
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_ec \rtri \ty \tto \tau
+  }{
+    \Gamma \vd M_\ec \of \sigma_ec \rtri \VAL{\id} \of \ty \tto \VAL{\id} \of \datom{\tau}
+  }
+
+  \inferrule{
+  }{
+    \Gamma \vd M_\ec \of \sigma_ec \rtri \typen~\id \tto \CON{\id} \of \satom{\type}
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \ty \tto \tau
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \typen~\id \mathbin{=} \ty \tto \CON{\id}
+      \of \satom{\singleton{\tau}}
+  }
+
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \sig \tto \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \structure{\id \of \sig} \tto \MOD{\id} \of \sigma
+  }
+
+  % And now, our solution for the avoidance problem
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \dec \tto M_1 \of \sigma_1 \\
+    \Gamma, \alpha/s \of (\HIDE \of \sigma_1) \vd \pair{M_\ec, \outn{s}}
+      \of \sigma_\ec \times \singleton{\alpha \of \sigma_1}
+      \rtri \mod \tto M_2 \of \sigma_2
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \letbinds{\dec}{\mod} \tto
+      \cancel{\letbind{\alpha/s}{M_1}{M_2 \of ???}}
+      \cancel{\pair{\alpha/s = M_1, M_2} \of \Sigma\bind{\alpha \of \sigma_1}{\sigma_2}} \\
+      \pair{\alpha/s = \inn{\HIDE}{M_1}, M_2} \of
+              \Sigma\bind{\alpha \of (\HIDE \of \sigma_1)}{\sigma_2}
+  }
+\end{mathpar}
