@@ -160,7 +160,7 @@
 \newcommand{\Snd}[1]{\texttt{Snd}(#1)}
 \newcommand{\Ext}[1]{\texttt{Ext}\ #1}
 
-\newcommand{\seal}[2]{#1 :> #2}
+\newcommand{\seal}[2]{#1 \mathbin{\texttt{:>}} #2}
 \newcommand{\Pig}[2]{\Pi^\texttt{gen}\bind{#1}{#2}}
 \newcommand{\lambdag}[2]{\lambda^\texttt{gen}\bind{#1}{#2}}
 \newcommand{\Pia}[2]{\Pi^\texttt{app}\bind{#1}{#2}}
@@ -190,6 +190,7 @@
 \newcommand{\spec}{\texttt{spec}}
 \newcommand{\dec}{\texttt{dec}}
 \newcommand{\ec}{\texttt{ec}}
+\newcommand{\Gammaec}{\Gamma \vd M_\ec \of \sigma_\ec}
 \newcommand{\fn}[2]{\texttt{fn}~#1~\Rightarrow~#2}
 \newcommand{\inn}[2]{\texttt{in}_{#1}~#2}
 \newcommand{\outn}[1]{\texttt{out}~#1}
@@ -201,7 +202,11 @@
 \newcommand{\FUN}[1]{\texttt{FUN}~#1}
 \newcommand{\HIDE}{\texttt{HIDE}}
 \newcommand{\structure}[1]{\texttt{structure}~#1}
-\newcommand{\struct}[1]{\texttt{structure}~#1~\texttt{end}}
+\newcommand{\struct}[1]{\texttt{struct}~#1~\texttt{end}}
+\newcommand{\sign}[1]{\sig~#1~\texttt{end}}
+\renewcommand{\mod}{\texttt{mod}}
+\newcommand{\local}[2]{\texttt{local}~#1~\texttt{in}~#2~\texttt{end}}
+\newcommand{\functor}[2]{\texttt{functor}~#1~(#2)}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -277,5 +282,7 @@ SML \\
 \include{170418}
 
 \include{170425}
+
+\include{170427}
 
 \end{document}

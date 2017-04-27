@@ -1,0 +1,158 @@
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \mod \tto M \of \sigma_1 \\
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \sig \tto \sigma_2 \\
+    %\Gamma \vd \sigma_1 \le \sigma_2 % this is wrong, instead:
+    %\Gamma \vd M \of \sigma_1 \le \sigma_2 \tto M' : \sigma
+    % above is also wrong, because M may not be pure, instead:
+    \Gamma, \alpha/s \of \sigma_1 \vd s \of \sigma_1 \le \sigma_2 \tto M' : \sigma
+  }{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \seal{\mod}{\sig} \tto
+      \letbind{\alpha/s}{M}{M' \of \sigma_2} \of \sigma_2
+      %\seal{M}{\sigma_2} \of \sigma_2
+  }
+
+  % NOTE: this is basically the same as the above, except
+  % ``transparent description'' rather than ``opaque description'' (above)
+  \inferrule{
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \mod \tto M \of \sigma_1 \\
+    \Gamma \vd M_\ec \of \sigma_\ec \rtri \sig \tto \sigma_2 \\
+    \Gamma, \alpha/s \of (\HIDE \of \sigma_1) \vd \outn{s}
+      \of \singleton{\alpha \of \sigma_1} \le \sigma_2 \tto M' : \sigma
+  }{
+    %\Gammaec \rtri \mod \of \sig \tto \letbind{\alpha/s}{M}{M' \of \sigma} \of \sigma
+    % above is wrong because avoidance problem
+    \Gammaec \rtri \mod \of \sig \tto \pair{\inn{\HIDE}{M}, M'}
+      \of \Sigma\bind{\alpha \of (\HIDE \of \sigma_1)}{\sigma}
+  }
+\end{mathpar}
+
+\subsection{$\plus\Gamma \vd \plus{M} \of \plus\sigma_1 \le \plus\sigma_2 \tto \minus{M'} \of \minus\sigma$}
+\begin{mathpar}
+  \inferrule{
+    \Gamma \vd M \of \sigma \le \sigma_1 \tto M_1 \of \sigma_1' \\
+    \Gamma, \alpha \of \Fst{\sigma_1'} \vd M \of \sigma \le \sigma_2 \tto M_2 \of \sigma_2'
+    % CODING NOTE: DONT FORGET TO LIFT M and \sigma, since htey come under
+    % a binding
+  }{
+    \Gamma \vd M \of \sigma \le \Sigma\bind{\alpha \of \sigma_1}{\sigma_2} \tto
+      \pair{\alpha/\_ = M_1, M_2} \of \Sigma\bind{\alpha \of \sigma_1'}{\sigma_2'}
+  }
+
+  \inferrule{
+  }{
+    \Gamma \vd M \of \sigma \le 1 \tto \ast \of 1
+  }
+
+  \inferrule{
+    \Gamma \vd M \of \sigma \rtri \VAL{\id} \tto M' \of \datom{\tau'} \\
+    \Gamma \vd \tau \equiv \tau' \of \type
+  }{
+    \Gamma \vd M \of \sigma \le (\VAL{\id} \of \datom{\tau}) \of \sigma' \tto
+      \inn{\VAL{\id}}{M'} \of (\VAL{\id} \of \datom{\tau'})
+      % for the last piece, \tau and \tau' are equally correct
+  }
+
+  \inferrule{
+    \Gamma \vd M \of \sigma \rtri \CON{\id} \tto M' \of \satom{k'} \\
+    \Gamma \vd k \equiv k' \of \type
+  }{
+    \Gamma \vd M \of \sigma \le (\CON{\id} \of \satom{k}) \of \sigma' \tto
+      \inn{\CON{\id}}{M'} \of (\CON{\id} \of \satom{k'})
+  }
+
+  \inferrule{
+    \Gamma \vd M_1 \of \sigma_1 \rtri \MOD{\id} \tto M_2 \of \sigma_2 \\
+    \Gamma \vd M_2 \of \sigma_2 \le \sigma \tto M_3 \of \sigma_3
+  }{
+    \Gamma \vd M_1 \of \sigma_1 \le \MOD{\id} \of \sigma \tto
+      \inn{\MOD{\id}}{M_3} \of (\MOD{\id} \of \sigma_3)
+  }
+\end{mathpar}
+
+% TODO: back ot functors
+\subsection{}
+\begin{mathpar}
+  \inferrule{
+    \Gamma, \alpha_1 \of \type, \dots, \alpha_n \of \type \vd
+      \pair{\pair{M_\ec, \inn{\CON{\id_1}}{\alpha_1}}, \dots, \inn{\CON{\id_n}}{\alpha_n}} \\
+      \of \sigma_\ec \times (\CON{\id_1} \of \satom{\singleton{\alpha_1}}) \times \dots \times
+                            (\CON{\id_n} \of \satom{\singleton{\alpha_n}})
+      \rtri \ty \tto \tau
+  }{
+    \Gammaec \rtri_\dec \typen(\id_1, \dots, \id_n) \id = \ty \tto \\
+      \inn{\CON{\id}}{\satom{\lambda\bind{\alpha_1 \of \type}{\dots \lambda\bind{\alpha_n \of \type}{\tau}}}}
+      %\of (\CON{\id} \of \satom{\type \arrow \dots \arrow \type \arrow \type})
+      % NOTE above is wrong, below is right
+      \of  (\CON{\id} \of \satom{\Pi\bind{\alpha_1 \of \type}{\dots \Pi\bind{\alpha_n \of \type}{\singleton{\tau}}}})
+      % total of n + 1 \types
+  }
+
+  % basically same as above
+  \inferrule{
+    \Gamma, \alpha_1 \of \type, \dots, \alpha_n \of \type \vd
+      \pair{\pair{M_\ec, \inn{\CON{\id_1}}{\alpha_1}}, \dots, \inn{\CON{\id_n}}{\alpha_n}} \\
+      \of \sigma_\ec \times (\CON{\id_1} \of \satom{\singleton{\alpha_1}}) \times \dots \times
+                            (\CON{\id_n} \of \satom{\singleton{\alpha_n}})
+      \rtri \ty \tto \tau
+  }{
+    \Gammaec \rtri_\spec \typen(\id_1, \dots, \id_n) \id = \ty \tto
+      (\CON{\id} \of \satom{\Pi\bind{\alpha_1 \of \type}{\dots \Pi\bind{\alpha_n \of \type}{\singleton{\tau}}}})
+  }
+
+  \inferrule{
+  }{
+    \Gammaec \rtri_\spec \typen(\id_1, \dots, \id_n) \id = \ty \tto
+      (\CON{\id} \of \satom{\type \arrow \dots \arrow \type \arrow \type})
+      % total of n + 1 \types
+  }
+
+  \inferrule{
+    \Gammaec \rtri \ty_i \tto \tau_i \\
+    \Gammaec \rtri \longid @ \CON{} \tto M \of \satom{k} \\
+    \Gamma \vd k \le \type \arrow \dots \type \arrow \type \\ % total of n + 1 \types
+    \Gamma \vd \Fst{M} \gg c
+  }{
+    \Gammaec \rtri_\spec (\ty_1, \dots, \ty_n) \longid \tto
+      \ap{\ap{c}{\tau_1}}{\dots \tau_2}
+  }
+
+  \inferrule{
+    \Gammaec \rtri \dec_1 \tto M_1 \of \sigma_1 \\
+    \Gamma, \alpha/s \of (\HIDE~\sigma_1) \vd \pair{M_\ec, \outn{s}}
+      \of \sigma_\ec \times \sigma_1 \rtri \dec_2 \tto M_2 \of \sigma_2
+  }{
+    \Gammaec \rtri \local{\dec_1}{\dec_2} \tto
+      \pair{\alpha/s = \HIDE~M_1, M_2} \of \Sigma\bind{\alpha \of (\HIDE~\sigma_1)}{\sigma_2}
+  }
+
+  \inferrule{
+    \Gammaec \rtri \sign{\spec_1, \dots, \spec_n} \tto \sigma_1 \\
+    \Gamma, \alpha/s \of \sigma_1 \vd \pair{M_\ec, s}
+      \of \sigma_\ec \times \singleton{\alpha \of \sigma_1} \rtri \mod \tto M \of \sigma_2
+  }{
+    \Gammaec \rtri \functor{\id}{\spec_1, \dots, \spec_n} = \mod \tto
+      \inn{\FUN{\id}}{\lambdag{\alpha/s \of \sigma_1}{M}}
+      \of (\FUN{\id} \of \Pig{\alpha \of \sigma_1}{\sigma_2})
+  }
+\end{mathpar}
+
+\vspace{1cm}
+Now lets look at functor application
+\begin{mathpar}
+  \inferrule{
+    \Gammaec \rtri \longid @ \FUN{} \tto F \of \Pig{\alpha \of \sigma_1}{\sigma_2} \\
+    \Gammaec \rtri \dec \tto M \of \sigma \\
+    \Gamma, \beta/s \of (\HIDE~\sigma) \vd \outn{s}
+      \of \singleton{\beta \of \sigma} \le \sigma_1
+      \tto M' \of \sigma_1' \\
+    %\Gamma, \beta/s \of (\HIDE \of \sigma) \vd \Fst{M'} \gg c % still has problems
+  }{
+    \Gammaec \rtri \longid~\dec \tto
+      \pair{\beta/s = \inn{\HIDE}{M}, \pair{\gamma/s' = \inn{\HIDE}{M'}, \ap{F}{s'}}} \\
+        \of \Sigma\bind{\beta \of (\HIDE \of \sigma)}
+                       {\Sigma\bind{\gamma \of (\HIDE \of \sigma_1')}
+                                   {\subst{\gamma}{\alpha}{\sigma_2}}}
+      %\letbind{\beta/s}{M}{\ap{F}{M'} \of \sigma_2} % this runs into avoidance problem
+  }
+\end{mathpar}
