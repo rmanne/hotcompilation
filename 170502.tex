@@ -1,0 +1,134 @@
+\begin{mathpar}
+  % This is not the right thing to do, we would rather search Basis for the
+  % Match exn, but we just wanna get through it right now, so we ignore it
+  \inferrule{
+    \Gammaec \rtri \exp \tto e \of \tau \\
+    %\Gammaec \rtri \texttt{General.Match}@\VAL{} \tto M \of \sigma \\
+    \Gamma, x \of \tau, y \of \exn \vd M_\ec \of \sigma_\ec \rtri
+      \matchwith~x \of \tau~\ow~y \tto e' \of t'
+  }{
+    \Gammaec \rtri \casen{\exp}{\matchn} \tto
+      \letbind{x}{e}{\letbind{y}{\tagn{\newtag{\times[]}}{\pair{}}}{e' \of t'}}
+  }
+
+  \inferrule{
+    \Gammaec \rtri \exp \tto e \of \tau \\
+    \Gamma, x \of \exn \vd M_\ec \of \sigma_\ec \rtri
+      \matchwith~x \of \exn~\ow~x \tto e' \of \tau' \\
+    \Gamma \vd \tau \equiv \tau' \of \type
+  }{
+    \Gammaec \rtri \expn~\handle~\matchn \tto \handle(e, \bind{x}{e'}) \of \tau
+  }
+
+  \inferrule{
+    \Gamma, y \of \tagt{\unit} \vd M_\ec \of \sigma_\ec
+      \rtri \patwith~e \ow y \tto M \of \sigma \\
+    \Gamma, \alpha/s \of \sigma
+      \vd \pair{M_\ec, s} \of \sigma_\ec \times \singleton{\alpha \of \sigma}
+      \rtri \exp \tto e' \of \tau' \\
+    \Gammaec \rtri \matchwith{e \of \tau} \ow e_\fail \tto e'' \of \tau'' \\
+    \Gamma \vd \tau' \equiv \tau'' \of \type
+  }{
+    % note also e_\fail is an \exn
+    \Gammaec \rtri \pat \Rightarrow \exp |\ \matchwith~e \of \tau \ow e_\fail \tto \\
+      \letbind{y}{\newtag{\unit}}{
+        \handle(\letbind{\alpha/s}{M}{e'}, \bind{x}{\iftag{y}{x}{\_}{e''}{\raisen{\tau'}{x}}})
+      } \of \tau'
+  }
+
+  \inferrule{
+    \Gamma, y \of \tagt{\unit} \vd M_\ec \of \sigma_\ec
+      \rtri \patwith~e \ow y \tto M \of \sigma \\
+    \Gamma, \alpha/s \of \sigma
+      \vd \pair{M_\ec, s} \of \sigma_\ec \times \singleton{\alpha \of \sigma}
+      \rtri \exp \tto e' \of \tau' \\
+  }{
+    \Gammaec \rtri \pat \Rightarrow \exp \withn e \of \tau \ow e_\fail \tto \\
+      \letbind{y}{\newtag{\unit}}{
+        \handle(\letbind{\alpha/s}{M}{e'},
+          \bind{x}{\iftag{y}{x}{\_}{\raisen{\tau'}{e_\fail}}{\raisen{\tau'}{x}}})
+      } \of \tau'
+  }
+
+  \inferrule{
+  }{
+    \Gammaec \rtri \_ \withn e \of \tau \ow e_\fail \rtri \pair{} \of 1
+  }
+
+  \inferrule{
+    \Gammaec \rtri \VAL{\id} \not\tto \\ 
+    OR \\
+    \Gammaec \rtri \VAL{\id} \tto M \of \sigma \\
+    \text{where } \sigma \text{ is not of the form }  \name \of \sigma'
+    %\Gammaec \rtri \VAL{\id} \tto M \of \datom{\tau} \\
+    %OR \\
+    %\Gammaec \rtri \VAL{\id} \tto M \of \Pig{.}{.}
+  }{
+    \Gammaec \rtri \id \withn e \of \tau \ow e_\fail \tto
+      \inn{\VAL{\id}}{\datom{e}} \of (\VAL{\id} \of \datom{\tau}
+  }
+
+  \inferrule{
+    \Gammaec \rtri \pat \withn e \of \tau \ow e_\fail \tto M \of \sigma
+  }{
+    \Gammaec \rtri \id \as \pat \withn e \of \tau \ow e_\fail \tto
+      \pair{M}{\inn{\VAL{\id}}{\datom{e}}} \of \sigma \times (\VAL{\id} \of \datom{\tau})
+  }
+
+  \inferrule{
+    \Gamma \vd \tau \equiv \intt \of \type
+  }{
+    \Gammaec \rtri \bar n \withn e \of \tau \ow e_\fail \tto
+      %\ite{e = \bar n}{\pair{} \of 1}{\raisen{1}{\tagn{e_\fail}{\pair{}}}}
+      \letbind{\_}{\ite{e = \bar n}{\pair{}}{\raisen{\unit}{\tagn{e_\fail}{\pair{}}}}}{
+        \pair{} \of 1
+      }
+  }
+
+  \inferrule{
+    \Gamma \vd \tau \whn \times[\tau_1, \dots, \tau_n] \\
+    \Gammaec \rtri \pat_i \withn \pi_{i - 1} e \of \tau_i \ow e_\fail \tto M_i \of \sigma_i
+  }{
+    \Gammaec \rtri (\pat_1, \dots, \pat_n) \withn e \of \tau \ow e_\fail \tto
+      \pair{M_1, \dots \pair{M_n, \pair{}} \dots}
+      \of \sigma_1 \times \dots \times \sigma_n \times 1
+  }
+\end{mathpar}
+% above are pattern matches
+
+\subsection{Data Types}
+Language updates: \\
+$\name \bnfdef \dots \bnfalt \DT{\id}$
+
+%$\DT{\id} \of \Sigma\bind{\alpha \of \CON{\id}}{\datom{\alpha \arrow +[\dots]}
+%              \times (\VAL{\id_1} \of (\DCON{1} \of "\ty_1" \arrow \alpha)
+%              \times \dots
+%              \times 1}$
+$\DT{\id} \of \Sigma\bind{\alpha \of \CON{\id}}{\datom{\alpha \arrow +[\dots]}
+              \times \VAL{\id_1} \of
+                (\DCON \of \datom{"\ty_1" \arrow \alpha}
+                  \times \datom{\alpha \arrow \unit + "\ty_1"})
+              \times \dots
+              \times 1}$
+
+\subsubsection{$\Gammaec \rtri \datbind \tto M \of \sigma$}
+\begin{mathpar}
+  \inferrule{
+    \Gammaec \rtri \datbind \tto M \of \sigma
+  }{
+    \Gammaec \rtri_\dec \datatype{\datbind} \tto M \of \sigma \\
+    \Gammaec \rtri_\spec \datatype{\datbind} \tto M \of \sigma
+  }
+
+  \inferrule{
+    \Gammaec \rtri \longid @ \VAL{} \tto M \of (\DCON \of \datom{\tau} \times \sigma)
+  }{
+    \Gammaec \rtri_\type \longid \tto \Ext{\pi_1 (\outn{M})} \of \tau
+  }
+
+  \inferrule{
+    \Gamma \vd \outn{M} \of \sigma \rtri \name \tto M' \of \sigma'
+  }{
+    \Gamma \vd M \of (\DT{\id} \of \sigma) \rtri \name \tto M' \of \sigma'
+  }
+\end{mathpar}

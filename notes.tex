@@ -207,6 +207,25 @@
 \renewcommand{\mod}{\texttt{mod}}
 \newcommand{\local}[2]{\texttt{local}~#1~\texttt{in}~#2~\texttt{end}}
 \newcommand{\functor}[2]{\texttt{functor}~#1~(#2)}
+\newcommand{\casen}[2]{\texttt{case}~#1~\texttt{in}~#2}
+\newcommand{\matchn}{\texttt{match}}
+\newcommand{\matchwith}{\texttt{match with}}
+\newcommand{\tagn}[2]{\texttt{tag}(#1, #2)}
+\newcommand{\tagt}[1]{\texttt{tag}(#1)}
+\newcommand{\newtag}[1]{\texttt{newtag}[#1]}
+\newcommand{\handle}{\texttt{handle}}
+\newcommand{\fail}{\texttt{fail}}
+\newcommand{\pat}{\texttt{pat}}
+\newcommand{\patwith}{\texttt{pat with}}
+\newcommand{\raisen}[2]{\texttt{raise}_{#1}~#2}
+\newcommand{\iftag}[5]{\texttt{iftag}(#1, #2, \bind{#3}{#4}, #5)} 
+\newcommand{\ite}[3]{\texttt{if}~#1~\texttt{then}~#2~\texttt{else}~#3}
+\DeclareMathOperator{\ow}{ow}
+\DeclareMathOperator{\withn}{\texttt{with}}
+\newcommand{\DT}[1]{\texttt{DT}~#1}
+\newcommand{\DCON}{\texttt{DCON1}}
+\newcommand{\datbind}{\texttt{datbind}}
+\newcommand{\datatype}[1]{\texttt{datatype}~#1}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -284,5 +303,7 @@ SML \\
 \include{170425}
 
 \include{170427}
+
+\include{170502}
 
 \end{document}
