@@ -1,0 +1,179 @@
+\begin{mathpar}
+  \inferrule{
+    \Gammaec \rtri \longid @ \VAL{} \tto M \of (\ECON \of (\datom{\tau} \times \sigma))
+  }{
+    \Gammaec \rtri_\expn \longid \tto \Ext{\pi_1 (\outn{M})} \of \tau
+  }
+
+  \inferrule{
+    \Gammaec \rtri \longid @ \VAL{} \tto M \of
+      (\DCON \of \sigma \times \datom{\tau_2 \arrow \unit + \tau_1}) \\
+    \Gamma \vd \tau \equiv \tau_2 \of \type \\
+    \Gamma, x \of \tau_1 \vd M_\ec \of \sigma_\ec
+      \rtri \pat \withn x \of \tau_1 \ow e_\fail \tto M' \of \sigma'
+  }{
+    \Gammaec \rtri \longid \pat \withn e \of \tau \ow e_\fail \tto \\
+      \lett{x}{
+        \casen{\Ext{\pi_2 (\outn{M})}~e}{
+          \bind{\_}{\raisen{\tau_1}{\tagn{e_\fail}{\pair{}}}}, \bind{x}{x}
+        }
+      }{M'} \of \sigma'
+  }
+
+  % CODING NOTE: there's a spec version that does the same thing
+  \inferrule{
+    \Gammaec \rtri \longid @ \DT{} \tto
+      M \of \Sigma\bind{\alpha \of (\name \of \satom{k})}{\sigma_2} \\
+    \Gamma \vd \Fst{M} \gg c
+  }{
+    \Gammaec \rtri_\dec \datatype\id \mathrel{=} \datatype\id \tto \\
+      \inn{\DT{\id}} \pair{\inn{\CON{\id}}{\outn{\pi_1 M}}, \pi_2 M} \of
+      (\DT{\id} \of
+        \singleton{c \of \Sigma\bind{\alpha \of (\CON{\id} \of \satom{k})}{\sigma_2})}
+  }
+\end{mathpar}
+
+\subsection{$\Gammaec \rtri \datbind \tto M \of \sigma$}
+\begin{mathpar}
+  \inferrule{
+    \Gamma, \alpha \of \type \vd \pair{M_\ec, \inn{\CON{\id}}{\satom{\alpha}}}
+      \of \sigma_\ec \times (\CON{\id} \of \satom{\singleton{\alpha}})
+      \rtri \dcons
+      \tto \tau, \bind{\alpha}{\sigma}, F
+  }{
+    \Gammaec \rtri \id \mathrel{=} \dcons
+      \tto \\ \inn{\DT{\id}}{\pair{
+        \alpha/\_ = \inn{\CON{\id}} \satom{\mu\bind{\alpha}{\tau}},
+        \ap{\ap{\ap{F}{\satom{\alpha}}}{
+          \datom{\lambda\bind{x \of \tau}{\roll{\mu\bind{\alpha}{\tau}}{x}}}
+        }}{
+          \datom{\lambda\bind{x \of \alpha}{\inr{\unroll{x}}}}
+        }
+      }}
+      \of \DT{\id} \of \Sigma\bind{\alpha \of (\CON{\id} \of \satom{\type})}{\sigma}
+  }
+\end{mathpar}
+Note here that $\tau$ is the not-yet-recursive type (the body). \\
+$F$ is the functor, of type
+$\Pi\bind{\alpha \of \satom{\type}}{
+  \datom{\tau \arrow \alpha} \arrow \datom{\alpha \arrow \unit + \tau} \arrow \sigma
+}$ \\
+% sigma is the part of the datatype that gives all of the constructors
+
+TODO: make sure it does the right thing (we should've already had this)
+\begin{mathpar}
+  \inferrule{
+    \Gammaec \rtri \datbind \tto M \of \sigma
+  }{
+    \Gammaec \rtri_\dec \datatype~\datbind \tto (\seal{M}{\sigma}) \of \sigma
+  }
+\end{mathpar}
+
+Now back where we left off...
+\begin{mathpar}
+  \inferrule{
+  }{
+    \Gammaec \rtri_\dcons \epsilon \tto \void, \bind{\alpha}{1},
+      \lambdag{\alpha/\_ \of \satom{\type}}{
+        \lambdag{\_/\_ \of \datom{\void \arrow \satom{\alpha}}}{
+          \lambdag{\_/\_ \of \datom{\alpha \arrow \unit + \void}}{
+            \pair{}
+          }
+        }
+      }
+  }
+
+  \inferrule{
+    \Gammaec \rtri \ty \tto \tau_1 \\
+    \Gammaec \rtri \dcons \tto \tau_2, \bind{\alpha}{\sigma}, F
+  }{
+    \Gammaec \rtri_\dcons \id \ofn \ty \ |\ \dcons \tto \tau_1 + \tau_2,
+      \bind{\alpha}{
+        ((\VAL{\id} \of
+        \DCON~(\datom{\tau_1 \arrow \alpha} \times \datom{\alpha \arrow \unit + \tau_1}))
+        \times \sigma)
+      }, \\
+      \lambda^{\texttt{gen}}{\alpha/\_ \of \satom{\type}}.
+        \lambda^{\texttt{gen}}{\_/c \of \datom{\tau_1 + \tau_2 \arrow \alpha}}.
+          \lambda^{\texttt{gen}}{\_/d \of \datom{\alpha \arrow \unit + (\tau_1 + \tau_2)}}. \\
+            \langle
+            \inn{\VAL{\id}}{
+              \inn{\DCON}{
+                \pair{
+                  \datom{\lambda\bind{x \of \tau}{\ap{\Ext{C}}{\inl{x}}}},
+                  \datom{\lambda\bind{x \of \alpha}{
+                    \casen{\ap{\Ext{D}}{x}}{
+                      \bind{\_}{\inl{\pair{}}},
+                      \bind{y}{\casen{y}{
+                        \bind{z}{\inr{z}},
+                        \bind{\_}{\inl{\pair{}}}
+                      }}
+                    }
+                  }}
+                }
+              }
+            }, \\
+            F \satom{\alpha} \datom{\lambda\bind{x \of \tau_2}{\Ext{C} \inr{x}}}
+            \datom{\lambda\bind{x \of \alpha}{\casen{\ap{\Ext{D}}{x}}{\bind{\_}{\inl\pair{}},
+            \bind{y}{\casen{y}{\bind{\_}{\inl\pair{}}, \bind{z}{\inr{z}}}}}}}
+            \rangle
+  }
+\end{mathpar}
+
+\subsection{Extensions}
+\begin{mathpar}
+  \inferrule{
+    \Gammaec \rtri \ty \tto \type
+  }{
+    \Gammaec \rtri_\spec \extension{\id}{\ty} \tto
+      \VAL{\id} \of
+      (\ECON \of (\datom{\tau \arrow \exn} \times \datom{\exn \arrow \unit + \tau}))
+  }
+
+  \inferrule{
+    \Gammaec \rtri \ty \arrow \tau
+  }{
+    \Gammaec \rtri \extension{\id}{\ty} \tto \\
+      \letbind{x \of \tagt{\tau}}{\newtag{\tau}}{
+        \inn{\VAL{\id}}{
+          \inn{\ECON}{
+            \pair{
+              \datom{\lambda\bind{y \of \tau}{\tagn{x}{y}}},
+              \datom{\lambda\bind{y \of \exn}{
+                \iftag{x}{y}{z \of \tau}{\inr{z}}{\inl\pair{}}
+              }}
+            }
+          }
+        }
+      }
+  }
+\end{mathpar}
+
+\subsection{Polymorphism}
+\begin{mathpar}
+  \inferrule{
+    \Gamma, \alpha_1 \of \type, \dots, \alpha_n \of \type \vd
+      \pair{M_\ec, \dots}
+      \of \sigma_\ec \times \CON{\id_1 \of \datom{\singleton{\alpha_1}}}
+                     \times \dots \rtri \exp
+      \tto e \of \tau
+  }{
+    \Gammaec \rtri \valn (\id_1 \dots \id_n) \id = \exp \tto \\
+      \inn{\VAL{\id}}{
+        \lambdag{\alpha_1/\_ \of \satom{\type}}{
+          \dots \lambdag{\alpha_n/\_ \of \satom{\type}}{
+            \datom{e}
+          }
+        }
+      }
+      \of \VAL{\id} \of \Pi\bind{\alpha_1/\_ \of \satom{\type}}{
+        \dots \Pi\bind{\alpha_n/\_ \of \satom{\type}}{
+          \datom{\tau}
+        }
+      }
+  }
+  % NOTE: there is a good reason we do it this way
+  % with this guessing, we can transition into type classes
+  % \Sigma\bind{\beta \of \satom{\type}}{\datom{\beta \arrow \beta \arrow \bool}}
+  % eqtype is a shitty simplification of typeclasses
+\end{mathpar}

@@ -224,8 +224,19 @@
 \DeclareMathOperator{\withn}{\texttt{with}}
 \newcommand{\DT}[1]{\texttt{DT}~#1}
 \newcommand{\DCON}{\texttt{DCON1}}
+\newcommand{\ECON}{\texttt{ECON1}}
+\newcommand{\dcons}{\texttt{dcons}}
 \newcommand{\datbind}{\texttt{datbind}}
 \newcommand{\datatype}[1]{\texttt{datatype}~#1}
+\newcommand{\lett}[3]{\texttt{lett}~#1 \mathbin{=} #2~\texttt{in}~#3}
+\newcommand{\roll}[2]{\texttt{roll}_{#1} #2}
+\newcommand{\unroll}[1]{\texttt{unroll} #1}
+\newcommand{\inr}[1]{\texttt{inr} #1}
+\newcommand{\inl}[1]{\texttt{inl} #1}
+\newcommand{\void}{\texttt{void}}
+\newcommand{\ofn}{\texttt{of}}
+\newcommand{\valn}{\texttt{val}}
+\newcommand{\extension}[2]{\texttt{extension}~#1~\texttt{of}~#2}
 
 \title{HOT Compilation Notes}
 \author{Rahul Manne\\
@@ -305,5 +316,7 @@ SML \\
 \include{170427}
 
 \include{170502}
+
+\include{170504}
 
 \end{document}
